@@ -15,9 +15,9 @@ https://google.github.io/styleguide/cppguide.html#General_Naming_Rules
  - Avoid defining macros, especially in headers; prefer inline functions, enums, and const variables.
 
  - Comment the code. 
- - Implementations comments use:
+ - Implementations comments, in .c files, use:
     > //this is a comment. 
- - Functions descriptions use:
+ - Functions descriptions, in header files, use:
     > /** <br>
     >  *This is a funtion description. <br>
     >  *@param f: variable description <br>
