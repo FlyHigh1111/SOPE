@@ -16,13 +16,17 @@ https://google.github.io/styleguide/cppguide.html#General_Naming_Rules
 
  - Comment the code. 
  - Implementations comments use:
-  > //this is a comment. 
+    > //this is a comment. 
  - Functions descriptions use:
-  ` /** 
-     *This is a funtion description.
-     *@param f: variable description
-     *@return int: what does the function returns?
-   */ `
+    > /** 
+
+    > *This is a funtion description.
+
+    > *@param f: variable description
+
+    > *@return int: what does the function returns?
+    
+    > */ 
    
    
 
