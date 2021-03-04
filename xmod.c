@@ -1,3 +1,122 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <string.h>
+#include "xmod.h"
+
+
+int decimalToOctal(int decimalnum)
+{
+    int octalnum = 0, temp = 1;
+    
+    while (decimalnum != 0)
+    {
+        octalnum = octalnum + (decimalnum % 8) * temp;
+        decimalnum = decimalnum / 8;
+        temp = temp * 10;
+    }
+    
+    return octalnum;
+}
+
+char *options;
+char *mode;
+char *pathname;
+
+int main(int argc, char *argv[]) {
+    
+    if (argc < 3 || argc > 6 ){
+        printf("ERRO - Numero Invalido de Parametros!\n");
+        return (1);
+    }
+    int i;
+    //Inicializa Parâmetros:
+    if (argc>3){   //verifica se foram definidas uma ou mais opções
+        options=malloc((argc-3)*sizeof(char));
+        for (i=1;i<=argc-3;i++){
+            if (argv[i][0]!='-'){
+                printf("Erro - opçao invalida!\n");
+                return 1;
+            }
+            else if (argv[i][1]!='v' && argv[i][1]!='c' && argv[i][1]!='R'){
+                printf("Erro - opçao invalida!\n");
+                return 1;
+            }
+            else if (strlen(argv[i])!=2){
+                printf("Erro - opçao invalida!\n");
+                return 1;
+            }
+            options[i-1]=argv[i][1];
+        }
+        options[i]='\0';
+    }
+    else
+        options=NULL;
+    
+    //Inicializa mode a partir da lista de argumentos da lnha de comando:
+    mode=malloc(sizeof(argv[argc-2]));
+    mode=argv[argc-2];
+    //Inicializa pathname a partir da lista de argumentos da lnha de comando:
+    pathname=malloc(sizeof(argv[argc-1]));
+    pathname=argv[argc-1];
+    
+    //Processa Opcoes
+    
+    //Processa Modo:
+    //Verificar formato fornecido:
+    if (mode[0]=='0'){ //modo indicado em formato "octal"
+        if (strlen(mode)!=4){
+            printf("Erro - modo invalido!\n");
+            return 1;
+        }
+        for (int i=1;i<4;i++){
+            if ((mode[i]<'0')||(mode[i]>'7')){ //verifica se modo é um numero em octal
+                printf("Erro - modo invalido!\n");
+                return 1;
+            }
+        }
+        //int strtoul(const char *str, char **endptr, int base)
+        printf("modo formato octal, correcto\n");
+        //printf("teste modo: %d   %o",atoi(mode),decimalToOctal(atoi(mode)));
+        if(chmod(pathname,strtoul(mode,NULL,8))!=0)
+            printf("erro no chmod\n");
+        
+    }
+    else{
+        char dominio[8];
+        strcpy(dominio,"augo-+=");
+        if(strchr(dominio,mode[0])==NULL){
+            printf("Erro - modo invalido!\n");
+            return 1;
+        }
+        printf("modo formato rwx, correcto\n");
+        //modo em formato rwx
+        
+    }
+    //Executa o comando:
+    
+    
+    
+    
+    
+    
+    
+    //printf ("opcoes: %s\nmode: %s\npathname: %s\n",options,mode,pathname);
+    
+    
+    
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+/*
 #include "xmod.h"
 
 struct Arguments InitializeArguments(int argc, char *argv[])
@@ -63,3 +182,4 @@ int main( int argc, char *argv[])
 
 	return 0;
 }
+*/
