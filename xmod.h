@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-
+#include <sys/stat.h>
 
 struct Arguments
 {
@@ -12,9 +12,10 @@ struct Arguments
 };
 
 /**
- * Initializes Arguments struct with the values introduced in the command line.
+ * Initializes Arguments struct with the values introduced in the command line and verifies errors
  * @param argc: number of arguments
  * @param argv: array of arguments
- * @return struct Arguments: Arguments struct wtih data members initialized
+ * @param args: Arguments struct passed by reference
+ * @return int: returns 0 if success; 1 otherwise
  */
-struct Arguments InitializeArguments(int argc, char *argv[]);
+int InitializeArguments(int argc, char *argv[], struct Arguments *args);
