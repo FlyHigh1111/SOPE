@@ -1,5 +1,8 @@
 #include "xmod.h"
 
+
+
+
 int InitializeArguments(int argc, char *argv[], struct Arguments *args)
 {
 
@@ -96,6 +99,143 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
 
     return 0;
 }
+int GetFilePermissions(const char *pathname){
+  int Perm=0;
+  struct stat fileattrib;
+  int fileMode;
+
+  if (stat("teste.txt",&fileattrib)==0){
+    fileMode = fileattrib.st_mode;
+    /* Check owner permissions */
+    if ((fileMode & S_IRUSR)) //&& (fileMode & S_IREAD))
+      Perm += 256;
+    if ((fileMode & S_IWUSR))// && (fileMode & S_IWRITE))
+      Perm += 128;
+    if ((fileMode & S_IXUSR))// && (fileMode & S_IEXEC))
+      Perm += 64;
+    if ((fileMode & S_IRGRP) && (fileMode & S_IREAD))
+      Perm += 32;
+    if ((fileMode & S_IWGRP) && (fileMode & S_IWRITE))
+      Perm += 16;
+    if ((fileMode & S_IXGRP) && (fileMode & S_IEXEC))
+      Perm += 8;
+    if ((fileMode & S_IROTH) && (fileMode & S_IREAD))
+      Perm += 4;
+    if ((fileMode & S_IWOTH) && (fileMode & S_IWRITE))
+      Perm += 2;
+    if ((fileMode & S_IXOTH) && (fileMode & S_IEXEC))
+      Perm += 1;
+    return Perm;
+  }
+  else
+    Perm=-1;  
+}
+int GetNewPermMask(char *NewMode){
+  char users=NewMode[0];
+  int NewPerm=0;
+  if (strchr("augo-+=",NewMode[0])){
+    
+    if (strchr("-+=",NewMode[0]))
+      users='t';
+    printf("P1\n");  
+    switch (users){
+      case 'u':
+          for(int i=2;i<strlen(NewMode);i++){
+            printf("P2\n");  
+            if(NewMode[i]=='r')
+              NewPerm += 256;
+            else
+              if(NewMode[i]=='w')
+                NewPerm += 128;
+              else
+                if(NewMode[i]=='x')
+                  NewPerm += 64;  
+          }
+        break;
+      case 'g':
+          for(int i=2;i<strlen(NewMode);i++){
+            if(NewMode[i]=='r')
+              NewPerm += 32;
+            else
+              if(NewMode[i]=='w')
+                NewPerm += 16;
+              else
+                if(NewMode[i]=='x')
+                  NewPerm += 8;  
+          }
+        break;
+      case 'o':
+          for(int i=2;i<strlen(NewMode);i++){
+            if(NewMode[i]=='r')
+              NewPerm += 4;
+            else
+              if(NewMode[i]=='w')
+                NewPerm += 2;
+              else
+                if(NewMode[i]=='x')
+                  NewPerm += 1;  
+          } 
+        break;
+      case 'a':
+          for(int i=2;i<strlen(NewMode);i++){
+            if(NewMode[i]=='r')
+              NewPerm += 256 + 32 + 4;
+            else
+              if(NewMode[i]=='w')
+                NewPerm += 128 + 16 + 2;
+              else
+                if(NewMode[i]=='x')
+                  NewPerm += 64 + 8 + 1;  
+          }
+        break; 
+      case 't':
+          for(int i=1;i<strlen(NewMode);i++){
+            if(NewMode[i]=='r')
+              NewPerm += 256 + 32 + 4;
+            else
+              if(NewMode[i]=='w')
+                NewPerm += 128 + 16 + 2;
+              else
+                if(NewMode[i]=='x')
+                  NewPerm += 64 + 8 + 1;  
+          }
+        break; 
+      default:
+          printf("P2\n");
+        break;     
+    }
+  }
+  printf("NewPerm: %d", NewPerm);
+  return NewPerm;
+}
+
+int GetNewPermissions(int FormPerm, char *NewMode){
+  int NewPerm;
+  int NewMask=GetNewPermMask(NewMode);
+  char Operator;
+  if (strchr("augo",NewMode[0]))
+    Operator=NewMode[1];
+  else
+    Operator=NewMode[0];
+printf("NewMask: %d",NewMask);  
+  switch(Operator){
+    case '+':
+        NewPerm = FormPerm | NewMask;
+      break; 
+    case '-':
+        NewPerm = FormPerm & ~NewMask;
+      break;
+    case '=':
+        NewPerm = NewMask;
+      break;
+    default:
+        return -1;
+      break;
+  }
+  return NewPerm;
+}
+
+
 
 int main( int argc, char *argv[])  
 {
@@ -106,6 +246,11 @@ int main( int argc, char *argv[])
         printf("Something went wrong! Closing...\n");
         return 1;
     }
+    int ActualPerm=GetFilePermissions(argv[argc-1]);
+    printf("Permissoes actuais: %o\n", ActualPerm);
+
+    printf("nova permissao: %o\n",GetNewPermissions(ActualPerm,argv[argc-2]));  
+
 
 	return 0;
 }

@@ -3,7 +3,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-
+#include <sys/types.h>
+#include <fcntl.h>
 struct Arguments
 {
     char **options;
@@ -19,3 +20,7 @@ struct Arguments
  * @return int: returns 0 if success; 1 otherwise
  */
 int InitializeArguments(int argc, char *argv[], struct Arguments *args);
+int GetFilePermissions(const char *pathname);
+int decimalToOctal(int decimalnum);
+int GetNewPermMask(char *NewMode);
+int GetNewPermissions(int FormPerm,char *NewMode);
