@@ -20,6 +20,18 @@ struct Arguments
  * @return int: returns 0 if success; 1 otherwise
  */
 int InitializeArguments(int argc, char *argv[], struct Arguments *args);
+
+/**
+ * Gets the value of the environment variable LOG_FILENAME
+ * @return FILE*: file descriptor of the file indicated in the LOG_FILENAME environment variable; or NULL if error occurs
+ */
+FILE* getLOG_FILENAME();
+
+/**´
+ * Por implementar. Objectivo: fechar todos os files que tenham sido abertos.
+ */
+int closeFiles();
+
 int GetFilePermissions(const char *pathname);
 int decimalToOctal(int decimalnum);
 int GetNewPermMask(char *NewMode);

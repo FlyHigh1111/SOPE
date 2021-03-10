@@ -1,8 +1,5 @@
 #include "xmod.h"
 
-
-
-
 int InitializeArguments(int argc, char *argv[], struct Arguments *args)
 {
 
@@ -235,9 +232,25 @@ printf("NewMask: %d",NewMask);
   return NewPerm;
 }
 
+FILE* getLOG_FILENAME()
+{
+    const char* s;
+    s = getenv("LOG_FILENAME");
+
+    if(s == NULL)
+    {
+      printf("getenv returned NULL\n");
+      return NULL;
+      
+    }
+    printf("%s = %s\n","LOG_FILENAME", s);
+    FILE* file = fopen(s, "w");
+    return file;    
+}
 
 
-int main( int argc, char *argv[])  
+
+int main( int argc, char *argv[], char *envp[])  
 {
     struct Arguments args;
 
@@ -246,12 +259,20 @@ int main( int argc, char *argv[])
         printf("Something went wrong! Closing...\n");
         return 1;
     }
-    int ActualPerm=GetFilePermissions(argv[argc-1]);
-    printf("Permissoes actuais: %o\n", ActualPerm);
+    //int ActualPerm=GetFilePermissions(argv[argc-1]);
+    //printf("Permissoes actuais: %o\n", ActualPerm);
 
-    printf("nova permissao: %o\n",GetNewPermissions(ActualPerm,argv[argc-2]));  
+    //printf("nova permissao: %o\n",GetNewPermissions(ActualPerm,argv[argc-2]));  
 
-
+    //file with regists
+    FILE* file = getLOG_FILENAME();
+    if (file == NULL)
+    {
+      printf("Error opening file.txt\n");
+      return -1;
+    }
+    printf("Sucess \n");
+    
 	return 0;
 }
 
