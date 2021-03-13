@@ -262,6 +262,32 @@ int ChangeFilepermissions(const char *pathname, int new_perm)
   fprintf(stdout, "Permissions changed with success.\n");
 	return 0;
 }
+int WriteOnFile(const char *pathname, char *text){
+ 	  FILE* file = fopen(pathname, "w");
+ 	  if (file == NULL)
+ 	  {
+ 		  printf("Error.\n");
+ 		  exit(1);
+ 	}
+ 	  fprintf(file, "%s", text);
+ 	  fclose(file);
+ 	  return 0;
+ }
+
+ int ReadFile(const char *pathname)
+ {
+ 	  FILE* file = fopen(pathname, "r");
+ 	  char line[256];
+ 	  if (file == NULL){
+ 		  printf("Error.\n");
+ 		  exit(1);
+ 	}
+ 	  while (fgets(line, sizeof(line), file)){
+         	printf("%s", line); 
+         }
+      fclose(file);
+ 	return 0;
+ }
 
 int main( int argc, char *argv[], char *envp[])  
 {
