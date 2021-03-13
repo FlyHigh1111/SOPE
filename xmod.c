@@ -1,3 +1,5 @@
+#include<sys/times.h>
+#include<unistd.h>
 #include "xmod.h"
 
 int InitializeArguments(int argc, char *argv[], struct Arguments *args)
@@ -124,8 +126,10 @@ int GetFilePermissions(const char *pathname){
       Perm += 1;
     return Perm;
   }
-  else
-    Perm=-1;  
+  else{
+    Perm=-1;
+    return Perm;
+  }
 }
 int GetNewPermMask(char *NewMode){
   char users=NewMode[0];
@@ -253,6 +257,14 @@ FILE* getLOG_FILENAME()
 int main( int argc, char *argv[], char *envp[])  
 {
     struct Arguments args;
+    clock_t start, end;
+    struct tms t;
+    long ticks;
+
+
+    start = times(&t);              //starts counting time
+    ticks = sysconf(_SC_CLK_TCK);
+
 
     if(InitializeArguments(argc, argv, &args) == 1)
     {
@@ -262,17 +274,30 @@ int main( int argc, char *argv[], char *envp[])
     //int ActualPerm=GetFilePermissions(argv[argc-1]);
     //printf("Permissoes actuais: %o\n", ActualPerm);
 
-    //printf("nova permissao: %o\n",GetNewPermissions(ActualPerm,argv[argc-2]));  
+    //printf("nova permissao: %o\n",GetNewPermissions(ActualPerm,argv[argc-2])); 
+
+
+    //Teste para verificar o tempo, como o programa ainda é mt pequeno o tempo era 0
+    for (size_t i = 0; i < 10000; i++){
+      printf("TESTE\n");
+    }
+     
+
+    ticks = ticks;
+    end = times(&t);
 
     //file with regists
     FILE* file = getLOG_FILENAME();
+
     if (file == NULL)
     {
       printf("Error opening file.txt\n");
       return -1;
     }
-    printf("Sucess \n");
-    
+    else{
+      fprintf(file, "%4.2f ms ;  %d\t\n", (double)(end - start)*1000/ticks, getpid());
+      printf("Sucess \n");
+    }
 	return 0;
 }
 
