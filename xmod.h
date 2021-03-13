@@ -5,6 +5,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include<sys/times.h>
+#include<unistd.h>
 struct Arguments
 {
     char **options;

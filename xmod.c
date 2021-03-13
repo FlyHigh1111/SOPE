@@ -1,5 +1,3 @@
-#include<sys/times.h>
-#include<unistd.h>
 #include "xmod.h"
 
 int InitializeArguments(int argc, char *argv[], struct Arguments *args)
