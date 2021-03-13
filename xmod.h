@@ -38,3 +38,6 @@ int GetFilePermissions(const char *pathname);
 int decimalToOctal(int decimalnum);
 int GetNewPermMask(char *NewMode);
 int GetNewPermissions(int FormPerm,char *NewMode);
+int ChangeFilePermissions(const char *pathname, int NewPerm);
+int WriteOnFile(const char *pathname, char *text);
+int ReadFile(const char *pathname);

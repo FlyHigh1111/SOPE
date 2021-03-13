@@ -250,6 +250,47 @@ FILE* getLOG_FILENAME()
     return file;    
 }
 
+int ChangeFilePermissions(const char *pathname, int NewPerm)
+{
+	int r;
+	r = chmod(pathname, NewPerm);
+	if (r != 0)
+	{
+		fprintf(stderr,"Unable to set new permissions on '%s'\n",pathname);
+        	exit(1);
+	}
+	return 0;
+}
+
+int WriteOnFile(const char *pathname, char *text)
+{
+	FILE* file = fopen(pathname, "w");
+	if (file == NULL)
+	{
+		printf("Error.\n");
+		exit(1);
+	}
+	fprintf(file, "%s", text);
+	fclose(file);
+	return 0;
+}
+
+int ReadFile(const char *pathname)
+{
+	FILE* file = fopen(pathname, "r");
+	char line[256];
+	if (file == NULL)
+	{
+		printf("Error.\n");
+		exit(1);
+	}
+	while (fgets(line, sizeof(line), file))
+	{
+        	printf("%s", line); 
+        }
+        fclose(file);
+	return 0;
+}
 
 
 int main( int argc, char *argv[], char *envp[])  
