@@ -27,17 +27,14 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args);
  * Gets the value of the environment variable LOG_FILENAME
  * @return FILE*: file descriptor of the file indicated in the LOG_FILENAME environment variable; or NULL if error occurs
  */
-FILE* getLOG_FILENAME();
+FILE* GetRegistsFile()
 
-/**´
- * Por implementar. Objectivo: fechar todos os files que tenham sido abertos.
- */
-int closeFiles();
 
 int GetFilePermissions(const char *pathname);
-int decimalToOctal(int decimalnum);
 int GetNewPermMask(char *NewMode);
 int GetNewPermissions(int FormPerm,char *NewMode);
 int ChangeFilePermissions(const char *pathname, int NewPerm);
-int WriteOnFile(const char *pathname, char *text);
-int ReadFile(const char *pathname);
+int GetFilePermissions(const char *pathname);
+
+int decimalToOctal(int decimalnum);
+
