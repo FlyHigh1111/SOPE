@@ -11,7 +11,7 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
     }
 
     //counts the number of options introduced in the command line
-    int num_options = 0;
+   /* int num_options = 0;
     int max_options = 3;
     for(size_t k = 1; k <= max_options; k++)
     {
@@ -19,7 +19,8 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
         {
             num_options++;
         }
-    }
+    }*/
+    int num_options=argc-3;
 
     if(num_options > 0)
     {
@@ -67,7 +68,7 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
     else
     {
         char dominio[8];
-        strcpy(dominio,"augo-+=");
+        strcpy(dominio,"augo");
         if(strchr(dominio, mode[0]) == NULL)
         {
             printf("Invalid mode!\n");
@@ -78,11 +79,13 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
     args->mode = mode;
 
     //verifies if file exists
-    if(fopen(argv[num_options+2], "r") == NULL)
+    FILE *fich=fopen(argv[num_options+2],"r");
+    if(fich==NULL)
     {
         printf("Error opening file!\n");
         return 1;
     }
+    fclose(fich);
     args->file_path = argv[num_options+2];
 
     //prints arguments
@@ -101,7 +104,7 @@ int GetFilePermissions(const char *pathname){
   struct stat fileattrib;
   int fileMode;
 
-  if (stat("teste.txt",&fileattrib)==0){
+  if (stat(pathname,&fileattrib)==0){
     fileMode = fileattrib.st_mode;
     /* Check owner permissions */
     if ((fileMode & S_IRUSR)) //&& (fileMode & S_IREAD))
@@ -132,11 +135,11 @@ int GetFilePermissions(const char *pathname){
 int GetNewPermMask(char *NewMode){
   char users=NewMode[0];
   int NewPerm=0;
-  if (strchr("augo-+=",NewMode[0])){
+  if (strchr("augo",NewMode[0])){
     
-    if (strchr("-+=",NewMode[0]))
+    /*if (strchr("-+=",NewMode[0]))
       users='t';
-    printf("P1\n");  
+    printf("P1\n");*/  
     switch (users){
       case 'u':
           for(int i=2;i<strlen(NewMode);i++){
@@ -187,7 +190,7 @@ int GetNewPermMask(char *NewMode){
                   NewPerm += 64 + 8 + 1;  
           }
         break; 
-      case 't':
+      /*case 't':
           for(int i=1;i<strlen(NewMode);i++){
             if(NewMode[i]=='r')
               NewPerm += 256 + 32 + 4;
@@ -198,9 +201,9 @@ int GetNewPermMask(char *NewMode){
                 if(NewMode[i]=='x')
                   NewPerm += 64 + 8 + 1;  
           }
-        break; 
+        break; */
       default:
-          printf("P2\n");
+          
         break;     
     }
   }
@@ -310,10 +313,25 @@ int main( int argc, char *argv[], char *envp[])
         printf("Something went wrong! Closing...\n");
         return 1;
     }
-    //int ActualPerm=GetFilePermissions(argv[argc-1]);
-    //printf("Permissoes actuais: %o\n", ActualPerm);
+    
+    int ActualPerm=GetFilePermissions(args.file_path);
+    printf("Permissoes actuais: %o\n", ActualPerm);
+    int NewPerm;
 
-    //printf("nova permissao: %o\n",GetNewPermissions(ActualPerm,argv[argc-2])); 
+
+    if (argv[argc-2][0]=='0')
+        NewPerm=strtoul(argv[argc-2],NULL,8);
+    //printf("nova permissao: %s\n",argv[argc-2]);
+
+    else{  
+        NewPerm=GetNewPermissions(ActualPerm,argv[argc-2]);
+        printf("nova permissao: %o\n",NewPerm); 
+}
+
+
+      //Altera Permissoes
+    chmod(argv[argc-1],NewPerm);
+
 
 
     //Teste para verificar o tempo, como o programa ainda é mt pequeno o tempo era 0
