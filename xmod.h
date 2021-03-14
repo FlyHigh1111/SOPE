@@ -5,8 +5,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include<sys/times.h>
-#include<unistd.h>
+#include <sys/times.h>
+#include <unistd.h>
+#include <signal.h>
 
 struct Arguments
 {
@@ -15,6 +16,8 @@ struct Arguments
     char *file_path;
     bool mode_is_octal;
 };
+
+static void signal_func(int);
 
 /**
  * Initializes Arguments struct with the values introduced in the command line and verifies errors
@@ -36,6 +39,12 @@ int GetFilePermissions(const char *pathname);
 int GetNewPermMask(char *new_mode);
 
 int GetNewPermissions(int form_perm, char *new_mode);
+
+/**
+ * @param signo: signal to be handled 
+ * 
+ */
+static void signal_func(int signo);
 
 
 

@@ -1,5 +1,7 @@
 #include "xmod.h"
 
+static void signal_func(int);
+
 int InitializeArguments(int argc, char *argv[], struct Arguments *args)
 {
     if (argc < 3 || argc > 6 )
@@ -249,6 +251,24 @@ FILE* GetRegistsFile()
     return file;    
 }
 
+//signal handler
+static void signal_func(int signo){
+  char term;
+  fprintf(stdout, "\n%d\t\n", getpid()/*, agrs.file_path,*/); //tem de se dar print do file_path do nº de ficheiros encontrados e o nº de ficheiros modificados
+  fprintf(stdout,"Exit or continue program? (E/C)");
+  scanf("%c", &term);
+  if(term == 'C' || term == 'c'){
+    
+  }
+  else if(term == 'E' || term == 'e'){
+    exit(EXIT_SUCCESS);
+  }
+  else{
+    printf("Error! Please enter a valid character.\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
 
 int main( int argc, char *argv[], char *envp[])  
 {
@@ -256,6 +276,10 @@ int main( int argc, char *argv[], char *envp[])
     clock_t start, end;
     struct tms t;
     long ticks;
+
+    //check if CTRL + C was pressed
+    signal(SIGINT, signal_func);
+
 
     //starts counting time
     start = times(&t);
@@ -267,7 +291,6 @@ int main( int argc, char *argv[], char *envp[])
         fprintf(stdout, "Something went wrong! Closing...\n");
         return -1;
     }
-
     fprintf(stdout, "\n----------------- Permissions ------------------\n");
     int actual_perm = GetFilePermissions(args.file_path);
     fprintf(stdout, "Actual permissions: %o\n", actual_perm);
@@ -279,6 +302,10 @@ int main( int argc, char *argv[], char *envp[])
       new_perm = GetNewPermissions(actual_perm, args.mode);
       fprintf(stdout, "New permissions: %o\n", new_perm); 
     }
+
+    //infinte cicle to check CTRL + C signal
+    for( ; ;);
+
     //changes the permissions
     int c = chmod(args.mode, new_perm);
     if(c == -1)
