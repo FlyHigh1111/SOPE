@@ -7,11 +7,13 @@
 #include <fcntl.h>
 #include<sys/times.h>
 #include<unistd.h>
+
 struct Arguments
 {
     char **options;
     char *mode;
     char *file_path;
+    bool mode_is_octal;
 };
 
 /**
@@ -27,14 +29,14 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args);
  * Gets the value of the environment variable LOG_FILENAME
  * @return FILE*: file descriptor of the file indicated in the LOG_FILENAME environment variable; or NULL if error occurs
  */
-FILE* GetRegistsFile()
-
+FILE* GetRegistsFile();
 
 int GetFilePermissions(const char *pathname);
-int GetNewPermMask(char *NewMode);
-int GetNewPermissions(int FormPerm,char *NewMode);
-int ChangeFilePermissions(const char *pathname, int NewPerm);
-int GetFilePermissions(const char *pathname);
 
-int decimalToOctal(int decimalnum);
+int GetNewPermMask(char *new_mode);
+
+int GetNewPermissions(int form_perm, char *new_mode);
+
+
+
 

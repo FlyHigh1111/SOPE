@@ -6,20 +6,10 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
     {
         fprintf(stdout, "Usage: xmod [OPTIONS] MODE FILE/DIR\n");
         fprintf(stdout, "Usage: xmod [OPTIONS] OCTAL-MODE FILE/DIR\n");
-        return 1;
+        return -1;
     }
 
-    //counts the number of options introduced in the command line
-   /* int num_options = 0;
-    int max_options = 3;
-    for(size_t k = 1; k <= max_options; k++)
-    {
-        if(strcmp(argv[k],"-v") == 0 || strcmp(argv[k],"-c") == 0 || strcmp(argv[k],"-R") == 0)
-        {
-            num_options++;
-        }
-    }*/
-    int num_options=argc-3;
+    int num_options = argc-3;
 
     if(num_options > 0)
     {
@@ -39,7 +29,7 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
             if(strcmp(argv[j+1], "-v") != 0 && strcmp(argv[j+1], "-c") != 0 && strcmp(argv[j+1],"-R") != 0)
             {
                 fprintf(stdout, "Available options:\n   -v\n  -c\n  -R\n");
-                return 1;
+                return -1;
             }
             strcpy(args->options[j], argv[j+1]);
         }
@@ -47,22 +37,24 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
     } 
 
     //verifies mode
-    char *mode = argv[num_options+1];
+    char *mode = argv[num_options + 1];
+	bool mode_is_octal = false;
     if (mode[0] == '0') //mode in octal
     { 
         if (strlen(mode) != 4)
         {
             fprintf(stdout, "Invalid mode!\n");
-            return 1;
+            return -1;
         }
         for (int i = 1; i < 4; i++)
         {
             if ((mode[i] < '0') || (mode[i] > '7'))
             {
                 fprintf(stdout, "Invalid mode!\n");
-                return 1;
+                return -1;
             }
         }
+		mode_is_octal = true;
     }
     else
     {
@@ -71,21 +63,22 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
         if(strchr(dominio, mode[0]) == NULL)
         {
             fprintf(stdout, "Invalid mode!\n");
-            return 1;
+            return -1;
         }
         
     }
     args->mode = mode;
+	args->mode_is_octal = mode_is_octal;
 
     //verifies if file exists
-    FILE *fich=fopen(argv[num_options+2],"r");
-    if(fich==NULL)
+    FILE *file = fopen(argv[num_options + 2],"r");
+    if(file == NULL)
     {
         fprintf(stdout, "Error opening file!\n");
-        return 1;
+        return -1;
     }
-    fclose(fich);
-    args->file_path = argv[num_options+2];
+    fclose(file);
+    args->file_path = argv[num_options + 2];
 
     //prints arguments
     fprintf(stdout, "Options:\n");
@@ -94,96 +87,100 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
         fprintf(stdout, "%s\n", args->options[k]);
     }
     fprintf(stdout, "mode: %s\n", args->mode);
+	fprintf(stdout, "mode is octal: %d\n", args->mode_is_octal);
     fprintf(stdout, "file_path: %s\n", args->file_path);
 
     return 0;
 }
-int GetFilePermissions(const char *pathname){
-  int Perm=0;
-  struct stat fileattrib;
-  int fileMode;
 
-  if (stat(pathname,&fileattrib)==0){
-    fileMode = fileattrib.st_mode;
-    /* Check owner permissions */
-    if ((fileMode & S_IRUSR)) //&& (fileMode & S_IREAD))
-      Perm += 256;
-    if ((fileMode & S_IWUSR))// && (fileMode & S_IWRITE))
-      Perm += 128;
-    if ((fileMode & S_IXUSR))// && (fileMode & S_IEXEC))
-      Perm += 64;
-    if (fileMode & S_IRGRP) //&& (fileMode & S_IREAD))
-      Perm += 32;
-    if (fileMode & S_IWGRP) //&& (fileMode & S_IWRITE))
-      Perm += 16;
-    if (fileMode & S_IXGRP) //&& (fileMode & S_IEXEC))
-      Perm += 8;
-    if (fileMode & S_IROTH) //&& (fileMode & S_IREAD))
-      Perm += 4;
-    if (fileMode & S_IWOTH) //&& (fileMode & S_IWRITE))
-      Perm += 2;
-    if (fileMode & S_IXOTH) //&& (fileMode & S_IEXEC))
-      Perm += 1;
-    return Perm;
+int GetFilePermissions(const char *pathname)
+{
+  int perm = 0;
+  struct stat fileattrib;
+  int file_mode;
+
+  if (stat(pathname, &fileattrib) == 0)
+  {
+    file_mode = fileattrib.st_mode;
+    // Check owner permissions 
+    if ((file_mode & S_IRUSR)) //&& (fileMode & S_IREAD))
+      perm += 256;
+    if ((file_mode & S_IWUSR))// && (fileMode & S_IWRITE))
+      perm += 128;
+    if ((file_mode & S_IXUSR))// && (fileMode & S_IEXEC))
+      perm += 64;
+    if (file_mode & S_IRGRP) //&& (fileMode & S_IREAD))
+      perm += 32;
+    if (file_mode & S_IWGRP) //&& (fileMode & S_IWRITE))
+      perm += 16;
+    if (file_mode & S_IXGRP) //&& (fileMode & S_IEXEC))
+      perm += 8;
+    if (file_mode & S_IROTH) //&& (fileMode & S_IREAD))
+      perm += 4;
+    if (file_mode & S_IWOTH) //&& (fileMode & S_IWRITE))
+      perm += 2;
+    if (file_mode & S_IXOTH) //&& (fileMode & S_IEXEC))
+      perm += 1;
   }
   else
-    Perm=-1;  
+    perm = -1; 
+
+ return perm;
 }
 
-
-
-
-int GetNewPermMask(char *NewMode){
-  char users=NewMode[0];
-  int NewPerm=0;
-  if (strchr("augo",NewMode[0])){
-    
+int GetNewPermMask(char *new_mode)
+{
+  char users = new_mode[0];
+  int new_perm = 0;
+  if (strchr("augo",new_mode[0]))
+  { 
     /*if (strchr("-+=",NewMode[0]))
       users='t';
     printf("P1\n");*/  
-    switch (users){
+    switch (users)
+	{
       case 'u':
-          for(int i = 2; i < strlen(NewMode) ; i++)
+          for(int i = 2; i < strlen(new_mode) ; i++)
           {
-            if(NewMode[i] == 'r')
-              NewPerm += 256;
-            else if(NewMode[i] == 'w')
-              NewPerm += 128;
-            else if(NewMode[i] == 'x')
-              NewPerm += 64;  
+            if(new_mode[i] == 'r')
+              new_perm += 256;
+            else if(new_mode[i] == 'w')
+              new_perm += 128;
+            else if(new_mode[i] == 'x')
+              new_perm += 64;  
           }
         break;
       case 'g':
-          for(int i = 2; i < strlen(NewMode); i++)
+          for(int i = 2; i < strlen(new_mode); i++)
           {
-            if(NewMode[i]=='r')
-              NewPerm += 32;
-            else if(NewMode[i]=='w')
-              NewPerm += 16;
-            else if(NewMode[i]=='x')
-             NewPerm += 8;  
+            if(new_mode[i]=='r')
+              new_perm += 32;
+            else if(new_mode[i]=='w')
+              new_perm += 16;
+            else if(new_mode[i]=='x')
+             new_perm += 8;  
           }
         break;
       case 'o':
-          for(int i = 2; i< strlen(NewMode); i++)
+          for(int i = 2; i< strlen(new_mode); i++)
           {
-            if(NewMode[i] == 'r')
-              NewPerm += 4;
-            else if(NewMode[i]=='w')
-               NewPerm += 2;
-            else if(NewMode[i]=='x')
-              NewPerm += 1;  
+            if(new_mode[i] == 'r')
+              new_perm += 4;
+            else if(new_mode[i]=='w')
+               new_perm += 2;
+            else if(new_mode[i]=='x')
+              new_perm += 1;  
           } 
         break;
       case 'a':
-          for(int i = 2; i < strlen(NewMode); i++)
+          for(int i = 2; i < strlen(new_mode); i++)
           {
-            if(NewMode[i] == 'r')
-              NewPerm += 256 + 32 + 4;
-            else if(NewMode[i]=='w')
-              NewPerm += 128 + 16 + 2;
-            else if(NewMode[i]=='x')
-              NewPerm += 64 + 8 + 1;  
+            if(new_mode[i] == 'r')
+              new_perm += 256 + 32 + 4;
+            else if(new_mode[i]=='w')
+              new_perm += 128 + 16 + 2;
+            else if(new_mode[i]=='x')
+              new_perm += 64 + 8 + 1;  
           }
         break; 
       /*case 't':
@@ -198,40 +195,42 @@ int GetNewPermMask(char *NewMode){
                   NewPerm += 64 + 8 + 1;  
           }
         break; */
-      default:
-          
+      default:  
         break;     
     }
   }
   
-  printf("NewPerm: %d", NewPerm);
-  return NewPerm;
+  //printf("NewPerm: %d", NewPerm);
+  return new_perm;
 }
 
-int GetNewPermissions(int FormPerm, char *NewMode){
-  int NewPerm;
-  int NewMask=GetNewPermMask(NewMode);
-  char Operator;
-  if (strchr("augo",NewMode[0]))
-    Operator=NewMode[1];
-  else
-    Operator=NewMode[0];
-printf("NewMask: %d",NewMask);  
-  switch(Operator){
-    case '+':
-        NewPerm = FormPerm | NewMask;
-      break; 
-    case '-':
-        NewPerm = FormPerm & ~NewMask;
-      break;
-    case '=':
-        NewPerm = NewMask;
-      break;
-    default:
-        return -1;
-      break;
-  }
-  return NewPerm;
+int GetNewPermissions(int form_perm, char *new_mode)
+{
+	int new_perm;
+	int new_mask = GetNewPermMask(new_mode);
+	char operator;
+
+	if (strchr("augo",new_mode[0]))
+    	operator=new_mode[1];
+  	else
+    	operator=new_mode[0];
+
+	//printf("NewMask: %d",new_mask);  
+  	switch(operator)
+	{
+    	case '+':
+        	new_perm = form_perm | new_mask;
+      		break; 
+    	case '-':
+        	new_perm = form_perm & ~new_mask;
+      		break;
+    	case '=':
+        	new_perm = new_mask;
+      		break;
+    	default:
+        	return -1;
+  	}
+  return new_perm;
 }
 
 
@@ -250,44 +249,6 @@ FILE* GetRegistsFile()
     return file;    
 }
 
-int ChangeFilepermissions(const char *pathname, int new_perm)
-{
-	int r;
-	r = chmod(pathname, new_perm);
-	if (r != 0)
-	{
-		fprintf(stdout,"Unable to set new permissions on '%s'\n", pathname);
-    return -1;
-	}
-  fprintf(stdout, "Permissions changed with success.\n");
-	return 0;
-}
-int WriteOnFile(const char *pathname, char *text){
- 	  FILE* file = fopen(pathname, "w");
- 	  if (file == NULL)
- 	  {
- 		  printf("Error.\n");
- 		  exit(1);
- 	}
- 	  fprintf(file, "%s", text);
- 	  fclose(file);
- 	  return 0;
- }
-
- int ReadFile(const char *pathname)
- {
- 	  FILE* file = fopen(pathname, "r");
- 	  char line[256];
- 	  if (file == NULL){
- 		  printf("Error.\n");
- 		  exit(1);
- 	}
- 	  while (fgets(line, sizeof(line), file)){
-         	printf("%s", line); 
-         }
-      fclose(file);
- 	return 0;
- }
 
 int main( int argc, char *argv[], char *envp[])  
 {
@@ -306,31 +267,21 @@ int main( int argc, char *argv[], char *envp[])
         fprintf(stdout, "Something went wrong! Closing...\n");
         return -1;
     }
-    
-    int ActualPerm=GetFilePermissions(args.file_path);
-    printf("Permissoes actuais: %o\n", ActualPerm);
-    int NewPerm;
-
-
-    if (argv[argc-2][0]=='0')
-        NewPerm=strtoul(argv[argc-2],NULL,8);
-    //printf("nova permissao: %s\n",argv[argc-2]);
-
-    else{  
-        NewPerm=GetNewPermissions(ActualPerm,argv[argc-2]);
-        printf("nova permissao: %o\n",NewPerm); 
-  }
-
-
-      //Altera Permissoes
-    chmod(argv[argc-1],NewPerm);
-
 
     fprintf(stdout, "\n----------------- Permissions ------------------\n");
-    int perm = GetFilepermissions(args.file_path);
-    fprintf(stdout, "Actual permissions: %o\n", perm);
-    fprintf(stdout, "New permissions: %o\n", GetNewpermissions(perm, args.mode));
-    if(ChangeFilepermissions(args.file_path, perm) == -1)
+    int actual_perm = GetFilePermissions(args.file_path);
+    fprintf(stdout, "Actual permissions: %o\n", actual_perm);
+    int new_perm;
+    if (args.mode[0] == '0')
+      new_perm = strtoul(args.mode, NULL, 8);
+    else
+    {  
+      new_perm = GetNewPermissions(actual_perm, args.mode);
+      fprintf(stdout, "New permissions: %o\n", new_perm); 
+    }
+    //changes the permissions
+    int c = chmod(args.mode, new_perm);
+    if(c == -1)
     {
       fprintf(stdout, "Something went wrong! Closing...\n");
       return -1; 
@@ -353,6 +304,6 @@ int main( int argc, char *argv[], char *envp[])
 
     fclose(file);
     fprintf(stdout, "\nSuccess \n");
-	  return 0;
+	return 0;
 }
 
