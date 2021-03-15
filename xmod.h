@@ -8,6 +8,7 @@
 #include <sys/times.h>
 #include <unistd.h>
 #include <signal.h>
+#include <errno.h>
 
 struct Arguments
 {
@@ -46,6 +47,6 @@ int GetNewPermissions(int form_perm, char *new_mode);
  */
 static void signal_func(int signo);
 
-
+void printError();
 
 

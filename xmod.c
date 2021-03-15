@@ -1,5 +1,6 @@
 #include "xmod.h"
 
+
 static void signal_func(int);
 
 int InitializeArguments(int argc, char *argv[], struct Arguments *args)
@@ -67,6 +68,15 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
             fprintf(stdout, "Invalid mode!\n");
             return -1;
         }
+        if(strchr("+-=", mode[1]) == NULL) {
+            printf("Invalid mode!\n");
+            return 1;
+        }  
+        for(int i=2; i<strlen(mode);i++)
+          if(strchr("rwx", mode[i]) == NULL) {
+            printf("Invalid mode!\n");
+            return 1;
+        }
         
     }
     args->mode = mode;
@@ -124,8 +134,10 @@ int GetFilePermissions(const char *pathname)
     if (file_mode & S_IXOTH) //&& (fileMode & S_IEXEC))
       perm += 1;
   }
-  else
-    perm = -1; 
+  else{
+    printError();
+    return -1; 
+  }
 
  return perm;
 }
@@ -234,6 +246,46 @@ int GetNewPermissions(int form_perm, char *new_mode)
   	}
   return new_perm;
 }
+void printError(){
+  switch (errno){
+      case ENOENT:
+        printf("ERROR - The file does not exist!\n");
+      break;
+      case EACCES: 
+        printf("ERROR - Search permission is denied on a component of the path prefix.\n");
+      break;
+      case EFAULT:
+        printf("ERROR - pathname points outside your accessible address space.\n");
+      break;
+      case EIO:
+        printf("ERROR - An I/O error occurred.\n");
+      break;
+      case ELOOP:
+        printf("ERROR - Too many symbolic links were encountered in resolving pathname.\n");
+      break;
+      case ENAMETOOLONG:
+        printf("ERROR - Pathname is too long.\n");
+      break;
+      case ENOMEM:
+        printf("ERROR - Insufficient kernel memory was available.\n");
+      break;
+      case ENOTDIR:
+        printf("ERROR - A component of the path prefix is not a directory.\n");
+      break;
+      case EPERM:
+        printf("ERROR - The effective UID does not match the owner of the file, and the process is not privileged, or\nThe file is marked immutable or append-only.\n");
+      break;
+      case EROFS:
+        printf("ERROR - The named file resides on a read-only filesystem.\n");
+      break;
+      case EBADF:
+        printf("ERROR - The file descriptor fd is not valid.\n");
+      break;
+      default:
+        printf("ERROR - An error ocurred.\n");
+      break;
+    }  
+}
 
 
 FILE* GetRegistsFile()
@@ -267,6 +319,7 @@ static void signal_func(int signo){
     printf("Error! Please enter a valid character.\n");
     exit(EXIT_FAILURE);
   }
+  //FALTA MANDAR ESCREVER O SINAL NO LOGFILE?
 }
 
 
@@ -293,6 +346,9 @@ int main( int argc, char *argv[], char *envp[])
     }
     fprintf(stdout, "\n----------------- Permissions ------------------\n");
     int actual_perm = GetFilePermissions(args.file_path);
+    if(actual_perm==-1){
+      return 1;
+    }
     fprintf(stdout, "Actual permissions: %o\n", actual_perm);
     int new_perm;
     if (args.mode[0] == '0')
@@ -320,9 +376,11 @@ int main( int argc, char *argv[], char *envp[])
     int c = chmod(args.file_path, new_perm);
     if(c == -1)
     {
-      fprintf(stdout, "Something went wrong! Closing...\n");
+      printError();
+      //fprintf(stdout, "Something went wrong! Closing...\n");
       return -1; 
     }
+
     else{
       if (actual_perm == new_perm && v_option){
         fprintf(stdout, "mode of '%s' retained as %o\n", args.file_path, new_perm);
@@ -354,4 +412,5 @@ int main( int argc, char *argv[], char *envp[])
     fprintf(stdout, "\nSuccess \n");
 	return 0;
 }
+//PERGUNTAR PROF -R criar um processo para cada chamada recursiva da funçao 
 
