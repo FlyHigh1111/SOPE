@@ -303,16 +303,37 @@ int main( int argc, char *argv[], char *envp[])
       fprintf(stdout, "New permissions: %o\n", new_perm); 
     }
 
-    //infinte cicle to check CTRL + C signal
-    for( ; ;);
+    //check options
+    bool c_option = false, v_option = false;
+    for (int i = 0; i != argc-3; i++){
+      if (strcmp(args.options[i], "-c") == 0){
+        c_option = true;
+        v_option = false;
+      }
+      else if (strcmp(args.options[i], "-v") == 0){
+        v_option = true;
+        c_option = false;
+      }
+    }
 
     //changes the permissions
-    int c = chmod(args.mode, new_perm);
+    int c = chmod(args.file_path, new_perm);
     if(c == -1)
     {
       fprintf(stdout, "Something went wrong! Closing...\n");
       return -1; 
-    } 
+    }
+    else{
+      if (actual_perm == new_perm && v_option){
+        fprintf(stdout, "mode of '%s' retained as %o\n", args.file_path, new_perm);
+      }
+      else if (actual_perm != new_perm && (v_option || c_option)){
+        fprintf(stdout, "mode of '%s' changed from %o to %o\n", args.file_path, actual_perm, new_perm);
+      }
+    }
+
+    //infinte cicle to check CTRL + C signal
+    for( ; ;);
 
     //file with regists
     FILE* file = GetRegistsFile();
