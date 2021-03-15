@@ -9,6 +9,8 @@ int InitializeArguments(int argc, char *argv[], struct Arguments *args)
     {
         fprintf(stdout, "Usage: xmod [OPTIONS] MODE FILE/DIR\n");
         fprintf(stdout, "Usage: xmod [OPTIONS] OCTAL-MODE FILE/DIR\n");
+        fprintf(stdout, "[OPTIONS]:\n -v\n -c\n -R\n");
+        fprintf(stdout, "MODE:<u|g|o|a><-|+|=><rwx>\n");
         return -1;
     }
 
@@ -246,7 +248,9 @@ int GetNewPermissions(int form_perm, char *new_mode)
   	}
   return new_perm;
 }
-void printError(){
+
+void printError()
+{
   switch (errno){
       case ENOENT:
         printf("ERROR - The file does not exist!\n");
@@ -339,7 +343,7 @@ int main( int argc, char *argv[], char *envp[])
     ticks = sysconf(_SC_CLK_TCK);
 
     fprintf(stdout, "\n------------- Introduced arguments -------------\n");
-    if(InitializeArguments(argc, argv, &args) == 1)
+    if(InitializeArguments(argc, argv, &args) == -1)
     {
         fprintf(stdout, "Something went wrong! Closing...\n");
         return -1;
@@ -412,5 +416,4 @@ int main( int argc, char *argv[], char *envp[])
     fprintf(stdout, "\nSuccess \n");
 	return 0;
 }
-//PERGUNTAR PROF -R criar um processo para cada chamada recursiva da funçao 
-
+ 
