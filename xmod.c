@@ -333,6 +333,30 @@ static void signal_func(int signo){
   //FALTA MANDAR ESCREVER O SINAL NO LOGFILE?
 }
 
+void oct_to_mode(int octal, char *mode){
+  char snum[3];
+  sprintf(snum, "%o", octal);
+  int octal_n = atoi(snum);
+  int temp;
+  for (int i = 0; i != 3; i++) {
+
+    if (i == 0) temp = octal_n;
+    else if (i == 1) temp = (octal_n/10) - ((octal_n/100)*10);
+    else if (i == 2) temp = octal_n - ((octal_n/10)*10);
+
+    if ( temp >= 4 ){
+      temp -= 4;
+      mode[i*3] = 'r';
+    } 
+    if (temp >= 2){
+      temp -= 2;
+      mode[i*3+1] = 'w';
+    }
+    if (temp == 1){
+      mode[i*3+2] = 'x';
+    }
+  }
+}
 
 int main( int argc, char *argv[], char *envp[])  
 {
@@ -394,13 +418,19 @@ int main( int argc, char *argv[], char *envp[])
       //fprintf(stdout, "Something went wrong! Closing...\n");
       return -1; 
     }
-
+    //-v or -c implementation
     else{
+      char mode[9] = "---------";
       if (actual_perm == new_perm && v_option){
-        fprintf(stdout, "mode of '%s' retained as %o\n", args.file_path, new_perm);
+        oct_to_mode(new_perm, mode);
+        fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", args.file_path, new_perm, mode);
       }
       else if (actual_perm != new_perm && (v_option || c_option)){
-        fprintf(stdout, "mode of '%s' changed from %o to %o\n", args.file_path, actual_perm, new_perm);
+        oct_to_mode(actual_perm, mode);
+        fprintf(stdout, "mode of '%s' changed from 0%o (%s) ", args.file_path, actual_perm, mode);
+        char mode[9] = "---------"; 
+        oct_to_mode(new_perm, mode);
+        fprintf(stdout, "to 0%o (%s)\n", new_perm, mode);
       }
     }
 

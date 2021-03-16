@@ -49,4 +49,4 @@ static void signal_func(int signo);
 
 void printError();
 
-
+void octal_to_mode(int octal, char *mode);
