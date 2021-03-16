@@ -12,10 +12,13 @@
 
 struct Arguments
 {
-    char **options;
-    char *mode;
-    char *file_path;
-    bool mode_is_octal;
+    int mode_octal;     //mode introduced in octal
+    char *mode;         //mode introduced in the format <u|g|o|a><-|+|=><rwx>
+    bool mode_is_octal; //true if mode is in octal; false otherwise
+    char *path_name;    //path with the directory/file 
+    bool option_v;      //true if mode '-v' was introduced
+    bool option_c;      //true if mode '-c' was introduced
+    bool option_R;      //true if mode '-R' was introduced
 };
 
 static void signal_func(int);
