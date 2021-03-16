@@ -309,12 +309,19 @@ FILE* GetRegistsFile()
 
 //signal handler
 static void signal_func(int signo){
-  char term;
-  fprintf(stdout, "\n%d\t\n", getpid()/*, agrs.file_path,*/); //tem de se dar print do file_path do nº de ficheiros encontrados e o nº de ficheiros modificados
+
+  char term, buf[50];
+
+  //Get the actual directory
+  getcwd(buf,sizeof(buf));
+
+  fprintf(stdout, "\n%d ;\t%s ;\t\n", getpid(), buf); //tem de se dar print do file_path do nº de ficheiros encontrados e o nº de ficheiros modificados
+
   fprintf(stdout,"Exit or continue program? (E/C)");
   scanf("%c", &term);
+  
   if(term == 'C' || term == 'c'){
-    
+    return;
   }
   else if(term == 'E' || term == 'e'){
     exit(EXIT_SUCCESS);
@@ -333,9 +340,12 @@ int main( int argc, char *argv[], char *envp[])
     clock_t start, end;
     struct tms t;
     long ticks;
+    struct sigaction sig;
+
+    sig.sa_handler = signal_func;
 
     //check if CTRL + C was pressed
-    signal(SIGINT, signal_func);
+    sigaction(SIGINT,&sig, NULL);
 
 
     //starts counting time
