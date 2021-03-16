@@ -1,119 +1,166 @@
 #include "xmod.h"
 
-
 static void signal_func(int);
 
-int InitializeArguments(int argc, char *argv[], struct Arguments *args)
+void PrintError(int error)
+{
+	fprintf(stderr, "xmod: ");
+	switch (error)
+	{
+		case 1:
+			fprintf(stderr, "missing operand");
+			break;
+		case 2:
+			fprintf(stderr, "invalid options");
+			break;
+		case 3:
+			fprintf(stderr, "invalid number of options");
+			break;
+		case 4:
+			fprintf(stderr, "invalid mode");
+			break;
+		case 5:
+			fprintf(stderr, "no such file or directory");
+			break;
+		case 6:
+			fprintf(stderr, "no LOG_FILENAME environment variable");
+			break;
+		case 7:
+			fprintf(stderr, "unable to get file permissions");
+			break;
+		case 8:
+			fprintf(stderr, "unable to set file permissions");
+			perror("");
+			break;
+
+	}
+	fprintf(stderr, "\nTry './xmod.o --help' for more information.\n");
+	exit(1);
+}
+
+
+FILE* GetRegistsFile()
+{
+    const char* s;
+    s = getenv("LOG_FILENAME");
+
+    if(s == NULL)
+		PrintError(6);
+
+    FILE* file = fopen(s, "w+");
+    return file;    
+}
+
+//signal handler
+static void signal_func(int signo){
+
+  char term, buf[50];
+
+  //Get the actual directory
+  getcwd(buf,sizeof(buf));
+
+  fprintf(stdout, "\n%d ;\t%s ;\t\n", getpid(), buf); //tem de se dar print do file_path do nº de ficheiros encontrados e o nº de ficheiros modificados
+
+  fprintf(stdout,"Exit or continue program? (E/C)");
+  scanf("%c", &term);
+  
+  if(term == 'C' || term == 'c'){
+    return;
+  }
+  else if(term == 'E' || term == 'e'){
+    exit(EXIT_SUCCESS);
+  }
+  else{
+    printf("Error! Please enter a valid character.\n");
+    exit(EXIT_FAILURE);
+  }
+  //FALTA MANDAR ESCREVER O SINAL NO LOGFILE?
+}
+
+void InitializeArguments(int argc, char *argv[], struct Arguments *args)
 {
     if (argc < 3 || argc > 6 )
-    {
-        fprintf(stdout, "Usage: xmod [OPTIONS] MODE FILE/DIR\n");
-        fprintf(stdout, "Usage: xmod [OPTIONS] OCTAL-MODE FILE/DIR\n");
-        fprintf(stdout, "[OPTIONS]:\n -v\n -c\n -R\n");
-        fprintf(stdout, "MODE:<u|g|o|a><-|+|=><rwx>\n");
-        return -1;
-    }
+		PrintError(1);
 
-    int num_options = argc-3;
+    int num_options = argc - 3;
+	args->option_v = false;
+	args->option_c = false;
+	args->option_R = false;
 
-    if(num_options > 0)
+    if(num_options >= 1 && num_options <= 3)
     {
-        //allocating memory for array of options
-        args->options = malloc(num_options * sizeof(char *)); 
-        if (args->options != NULL)
-        {
-            for (int i = 0 ; i < num_options ; i++)
-            {
-                int number_chars = 2;
-                args->options[i] = malloc(number_chars); //each option has only 2 characters (e.g. '-v')
-            }
-        }  
-        //initializes the array of options
-        for(size_t j = 0; j < num_options; j++)
+		for(size_t j = 0; j < num_options; j++)
         {
             if(strcmp(argv[j+1], "-v") != 0 && strcmp(argv[j+1], "-c") != 0 && strcmp(argv[j+1],"-R") != 0)
-            {
-                fprintf(stdout, "Available options:\n   -v\n  -c\n  -R\n");
-                return -1;
-            }
-            strcpy(args->options[j], argv[j+1]);
-        }
+                PrintError(2);
 
+            if(strcmp(argv[j+1], "-v") == 0)
+				args->option_v = true;
+
+			if(strcmp(argv[j+1], "-c") == 0)
+				args->option_c = true;
+
+			if(strcmp(argv[j+1], "-R") == 0)
+				args->option_R = true;
+        }
     } 
+	else
+		PrintError(3);
 
     //verifies mode
     char *mode = argv[num_options + 1];
-	bool mode_is_octal = false;
     if (mode[0] == '0') //mode in octal
     { 
         if (strlen(mode) != 4)
-        {
-            fprintf(stdout, "Invalid mode!\n");
-            return -1;
-        }
+            PrintError(4);
+
         for (int i = 1; i < 4; i++)
         {
             if ((mode[i] < '0') || (mode[i] > '7'))
-            {
-                fprintf(stdout, "Invalid mode!\n");
-                return -1;
-            }
+                PrintError(4);
         }
-		mode_is_octal = true;
+		args->mode_is_octal = true;
+		args->mode_octal = strtoul(mode, NULL, 8);
     }
     else
     {
         char dominio[8];
         strcpy(dominio,"augo");
         if(strchr(dominio, mode[0]) == NULL)
-        {
-            fprintf(stdout, "Invalid mode!\n");
-            return -1;
-        }
-        if(strchr("+-=", mode[1]) == NULL) {
-            printf("Invalid mode!\n");
-            return 1;
-        }  
+            PrintError(4);
+        
+        if(strchr("+-=", mode[1]) == NULL) 
+            PrintError(4);
+         
         for(int i=2; i<strlen(mode);i++)
-          if(strchr("rwx", mode[i]) == NULL) {
-            printf("Invalid mode!\n");
-            return 1;
+		{
+          if(strchr("rwx", mode[i]) == NULL)
+            PrintError(4);
         }
+		args->mode_is_octal = false;
+		args->mode = mode;
         
     }
-    args->mode = mode;
-	args->mode_is_octal = mode_is_octal;
 
     //verifies if file exists
     FILE *file = fopen(argv[num_options + 2],"r");
     if(file == NULL)
     {
-        fprintf(stdout, "Error opening file!\n");
-        return -1;
+        PrintError(5);
     }
     fclose(file);
-    args->file_path = argv[num_options + 2];
+    args->path_name = argv[num_options + 2];
 
-    //prints arguments
-    fprintf(stdout, "Options:\n");
-    for (size_t k = 0; k < num_options; k++)
-    {
-        fprintf(stdout, "%s\n", args->options[k]);
-    }
-    fprintf(stdout, "mode: %s\n", args->mode);
-	fprintf(stdout, "mode is octal: %d\n", args->mode_is_octal);
-    fprintf(stdout, "file_path: %s\n", args->file_path);
-
-    return 0;
+    return;
 }
 
-int GetFilePermissions(const char *pathname)
+int GetFilePermissions(const char *path_name)
 {
   int perm = 0;
   struct stat fileattrib;
   int file_mode;
 
-  if (stat(pathname, &fileattrib) == 0)
+  if (stat(path_name, &fileattrib) == 0)
   {
     file_mode = fileattrib.st_mode;
     // Check owner permissions 
@@ -136,10 +183,8 @@ int GetFilePermissions(const char *pathname)
     if (file_mode & S_IXOTH) //&& (fileMode & S_IEXEC))
       perm += 1;
   }
-  else{
-    printError();
-    return -1; 
-  }
+  else
+	PrintError(7);
 
  return perm;
 }
@@ -249,91 +294,8 @@ int GetNewPermissions(int form_perm, char *new_mode)
   return new_perm;
 }
 
-void printError()
+void oct_to_mode(int octal, char *mode)
 {
-  switch (errno){
-      case ENOENT:
-        printf("ERROR - The file does not exist!\n");
-      break;
-      case EACCES: 
-        printf("ERROR - Search permission is denied on a component of the path prefix.\n");
-      break;
-      case EFAULT:
-        printf("ERROR - pathname points outside your accessible address space.\n");
-      break;
-      case EIO:
-        printf("ERROR - An I/O error occurred.\n");
-      break;
-      case ELOOP:
-        printf("ERROR - Too many symbolic links were encountered in resolving pathname.\n");
-      break;
-      case ENAMETOOLONG:
-        printf("ERROR - Pathname is too long.\n");
-      break;
-      case ENOMEM:
-        printf("ERROR - Insufficient kernel memory was available.\n");
-      break;
-      case ENOTDIR:
-        printf("ERROR - A component of the path prefix is not a directory.\n");
-      break;
-      case EPERM:
-        printf("ERROR - The effective UID does not match the owner of the file, and the process is not privileged, or\nThe file is marked immutable or append-only.\n");
-      break;
-      case EROFS:
-        printf("ERROR - The named file resides on a read-only filesystem.\n");
-      break;
-      case EBADF:
-        printf("ERROR - The file descriptor fd is not valid.\n");
-      break;
-      default:
-        printf("ERROR - An error ocurred.\n");
-      break;
-    }  
-}
-
-
-FILE* GetRegistsFile()
-{
-    const char* s;
-    s = getenv("LOG_FILENAME");
-
-    if(s == NULL)
-    {
-      printf("getenv returned NULL\n");
-      return NULL;
-      
-    }
-    FILE* file = fopen(s, "w");
-    return file;    
-}
-
-//signal handler
-static void signal_func(int signo){
-
-  char term, buf[50];
-
-  //Get the actual directory
-  getcwd(buf,sizeof(buf));
-
-  fprintf(stdout, "\n%d ;\t%s ;\t\n", getpid(), buf); //tem de se dar print do file_path do nº de ficheiros encontrados e o nº de ficheiros modificados
-
-  fprintf(stdout,"Exit or continue program? (E/C)");
-  scanf("%c", &term);
-  
-  if(term == 'C' || term == 'c'){
-    return;
-  }
-  else if(term == 'E' || term == 'e'){
-    exit(EXIT_SUCCESS);
-  }
-  else{
-    printf("Error! Please enter a valid character.\n");
-    exit(EXIT_FAILURE);
-  }
-  //FALTA MANDAR ESCREVER O SINAL NO LOGFILE?
-}
-
-void oct_to_mode(int octal, char *mode){
   char snum[3];
   sprintf(snum, "%o", octal);
   int octal_n = atoi(snum);
@@ -358,102 +320,122 @@ void oct_to_mode(int octal, char *mode){
   }
 }
 
+
+void ChangePermissions(const struct Arguments *args, char *path)
+{
+	int actual_perm = GetFilePermissions(path);
+    int new_perm;
+    if (args->mode_is_octal == true)
+      new_perm = args->mode_octal;
+    else
+    {  
+      new_perm = GetNewPermissions(actual_perm, args->mode);
+    }
+
+    //changes the permissions
+    int c = chmod(path, new_perm);
+    if(c == -1)
+		PrintError(8);
+
+    //-v or -c implementation
+    char mode[9] = "---------";
+    if (actual_perm == new_perm && args->option_v)
+	{
+        oct_to_mode(new_perm, mode);
+        fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", path, new_perm, mode);
+    }
+    else if (actual_perm != new_perm && (args->option_c || args->option_v))
+	{
+		oct_to_mode(actual_perm, mode);
+        fprintf(stdout, "mode of '%s' changed from 0%o (%s) ", path, actual_perm, mode); 
+        oct_to_mode(new_perm, mode);
+        fprintf(stdout, "to 0%o (%s)\n", new_perm, mode);
+    }
+	return;
+
+}
+
+void ProcessRecursive(const struct Arguments *args, char *path)
+{
+	DIR *dir = opendir(path); //opens directory
+	struct dirent *file;
+
+	while ((file = readdir(dir)) != NULL)
+	{
+		struct stat path_stat;
+		char *path_ = malloc(sizeof(path) + sizeof('/') + sizeof(file->d_name));
+		sprintf(path_, "%s/%s", path, file->d_name);
+		stat(path_, &path_stat);
+
+        //if is a regular file ("base case")
+		if (S_ISREG(path_stat.st_mode)) 
+		{
+			//fprintf(stdout, "	%s/%s\n", path, file->d_name);
+			ChangePermissions(args, path_);
+		}
+
+        //verififies if is a directory and ignores the parent directory (..) and the current directory (.)
+		else if (S_ISDIR(path_stat.st_mode) && strcmp(file->d_name, "..") != 0 && strcmp(file->d_name, ".") != 0)
+		{
+			pid_t child_pid = fork();
+			int status;
+			if (child_pid == 0)
+			{
+				ProcessRecursive(args, path_); //explores the sub-directory in the new process (child process)
+				return;
+			}
+			else
+			{
+				while(wait(&status)>0) ; //makes the parent waits for his child to finish
+			}
+		}
+		free(path_);
+	}
+
+}
+
+
+
+
 int main( int argc, char *argv[], char *envp[])  
 {
     struct Arguments args;
     clock_t start, end;
     struct tms t;
     long ticks;
-    struct sigaction sig;
+    //struct sigaction sig;
 
-    sig.sa_handler = signal_func;
+    //sig.sa_handler = signal_func;
 
     //check if CTRL + C was pressed
-    sigaction(SIGINT,&sig, NULL);
+    //sigaction(SIGINT,&sig, NULL);
 
 
     //starts counting time
     start = times(&t);
     ticks = sysconf(_SC_CLK_TCK);
 
-    fprintf(stdout, "\n------------- Introduced arguments -------------\n");
-    if(InitializeArguments(argc, argv, &args) == -1)
-    {
-        fprintf(stdout, "Something went wrong! Closing...\n");
-        return -1;
-    }
-    fprintf(stdout, "\n----------------- Permissions ------------------\n");
-    int actual_perm = GetFilePermissions(args.file_path);
-    if(actual_perm==-1){
-      return 1;
-    }
-    fprintf(stdout, "Actual permissions: %o\n", actual_perm);
-    int new_perm;
-    if (args.mode[0] == '0')
-      new_perm = strtoul(args.mode, NULL, 8);
-    else
-    {  
-      new_perm = GetNewPermissions(actual_perm, args.mode);
-      fprintf(stdout, "New permissions: %o\n", new_perm); 
-    }
+    InitializeArguments(argc, argv, &args);
 
-    //check options
-    bool c_option = false, v_option = false;
-    for (int i = 0; i != argc-3; i++){
-      if (strcmp(args.options[i], "-c") == 0){
-        c_option = true;
-        v_option = false;
-      }
-      else if (strcmp(args.options[i], "-v") == 0){
-        v_option = true;
-        c_option = false;
-      }
-    }
-
-    //changes the permissions
-    int c = chmod(args.file_path, new_perm);
-    if(c == -1)
-    {
-      printError();
-      //fprintf(stdout, "Something went wrong! Closing...\n");
-      return -1; 
-    }
-    //-v or -c implementation
-    else{
-      char mode[9] = "---------";
-      if (actual_perm == new_perm && v_option){
-        oct_to_mode(new_perm, mode);
-        fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", args.file_path, new_perm, mode);
-      }
-      else if (actual_perm != new_perm && (v_option || c_option)){
-        oct_to_mode(actual_perm, mode);
-        fprintf(stdout, "mode of '%s' changed from 0%o (%s) ", args.file_path, actual_perm, mode);
-        char mode[9] = "---------"; 
-        oct_to_mode(new_perm, mode);
-        fprintf(stdout, "to 0%o (%s)\n", new_perm, mode);
-      }
-    }
+	if(args.option_c || args.option_v)
+		ChangePermissions(&args, args.path_name);
+	else if(args.option_R)
+		ProcessRecursive(&args, args.path_name);
+    
 
     //infinte cicle to check CTRL + C signal
-    for( ; ;);
+    //for( ; ;);
 
     //file with regists
-    FILE* file = GetRegistsFile();
-
-    if (file == NULL)
-    {
-      fprintf(stdout, "Error opening file.txt\n");
-      return -1;
-    }
+    FILE* regists_file = GetRegistsFile();
 
     ticks = ticks;
     end = times(&t);
 
     //puts informations on the regists file
-    fprintf(file, "%4.2f ms ;  %d\t\n", (double)(end - start)*1000/ticks, getpid());
+    fprintf(regists_file, "%4.2f ms ;  %d\t\n", (double)(end - start)*1000/ticks, getpid());
 
-    fclose(file);
-    fprintf(stdout, "\nSuccess \n");
+    fclose(regists_file);
 	return 0;
 }
  
