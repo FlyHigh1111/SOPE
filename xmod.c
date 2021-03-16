@@ -309,14 +309,18 @@ void oct_to_mode(int octal, char *mode)
     if ( temp >= 4 ){
       temp -= 4;
       mode[i*3] = 'r';
-    } 
+    }
+    else mode[i*3] = '-';
     if (temp >= 2){
       temp -= 2;
       mode[i*3+1] = 'w';
     }
+    else mode[i*3+1] = '-';
     if (temp == 1){
       mode[i*3+2] = 'x';
     }
+    else mode[i*3+2] = '-';
+    
   }
 }
 
@@ -338,16 +342,14 @@ void ChangePermissions(const struct Arguments *args, char *path)
 		PrintError(8);
 
     //-v or -c implementation
-    char mode[9] = "---------";
-    if (actual_perm == new_perm && args->option_v)
-	{
+    char mode[9] = "";
+    if (actual_perm == new_perm && args->option_v) {
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", path, new_perm, mode);
     }
-    else if (actual_perm != new_perm && (args->option_c || args->option_v))
-	{
-		oct_to_mode(actual_perm, mode);
-        fprintf(stdout, "mode of '%s' changed from 0%o (%s) ", path, actual_perm, mode); 
+    else if (actual_perm != new_perm && (args->option_c || args->option_v)) {
+		    oct_to_mode(actual_perm, mode);
+        fprintf(stdout, "mode of '%s' changed from 0%o (%s) ", path, actual_perm, mode);
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "to 0%o (%s)\n", new_perm, mode);
     }
