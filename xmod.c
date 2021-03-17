@@ -527,7 +527,7 @@ int main(int argc, char *argv[], char *envp[])
 
 	if(args.option_c || args.option_v)
 		ChangePermissions(&args, args.path_name);
-	else if(args.option_R)
+	if(args.option_R)
 		ProcessRecursive(argc, argv, envp, &args);
     
 
