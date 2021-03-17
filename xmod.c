@@ -5,6 +5,17 @@ bool hanlder_flag = false;
 
 static void signal_func(int);
 
+void PrintManual()
+{
+	fprintf(stdout, "Usage: ./xmod.o [OPTIONS] MODE FILE/DIR\n");
+	fprintf(stdout, "   or: xmod [OPTIONS] OCTAL-MODE FILE/DIR\n\n");
+	fprintf(stdout, "   -c: like verbose but report only when a change is made\n");
+	fprintf(stdout, "   -v: output a diagnostic for every file processed\n");
+	fprintf(stdout, "   -R: change files and directories recursively\n\n");
+	fprintf(stdout, "MODE is of the form '<u|g|o|a><-|+|=><rwx>' or '0[0-7][0-7][0-7]'\n");
+	exit(0);
+}
+
 void PrintError(int error)
 {
 	fprintf(stderr, "xmod: ");
@@ -56,8 +67,13 @@ FILE* GetRegistsFile()
 
 void InitializeArguments(int argc, char *argv[], struct Arguments *args)
 {
-    if (argc < 3 || argc > 6 )
+    if (argc < 2 || argc > 6 )
 		PrintError(1);
+
+	if(strcmp(argv[1], "--help") == 0)
+	{
+		PrintManual();
+	}
 
     int num_options = argc - 3;
 	args->option_v = false;
@@ -65,22 +81,28 @@ void InitializeArguments(int argc, char *argv[], struct Arguments *args)
 	args->option_R = false;
 
     if(num_options >= 1 && num_options <= 3)
-    {
+	{
 		for(size_t j = 0; j < num_options; j++)
         {
-            if(strcmp(argv[j+1], "-v") != 0 && strcmp(argv[j+1], "-c") != 0 && strcmp(argv[j+1],"-R") != 0)
-                PrintError(2);
-
+            if(strcmp(argv[j+1], "-v") != 0 && strcmp(argv[j+1], "-c") != 0 && strcmp(argv[j+1],"-R") != 0) 
+			{
+				PrintError(2);
+			}
             if(strcmp(argv[j+1], "-v") == 0)
+			{
 				args->option_v = true;
-
+			} 
 			if(strcmp(argv[j+1], "-c") == 0)
+			{
 				args->option_c = true;
-
-			if(strcmp(argv[j+1], "-R") == 0)
+			}
+			if(strcmp(argv[j+1], "-R") == 0) 
+			{
 				args->option_R = true;
-        }
-    } 
+			}
+        } 
+
+	}
 	else
 		PrintError(3);
 
@@ -277,7 +299,8 @@ void oct_to_mode(int octal, char *mode)
   sprintf(snum, "%o", octal);
   int octal_n = atoi(snum);
   int temp;
-  for (int i = 0; i != 3; i++) {
+  for (int i = 0; i != 3; i++) 
+  {
 
     if (i == 0) temp = octal_n/100;
     else if (i == 1) temp = (octal_n/10) - ((octal_n/100)*10);
@@ -320,12 +343,14 @@ void ChangePermissions(const struct Arguments *args, char *path)
 
     //-v or -c implementation
     char mode[9] = "";
-    if (actual_perm == new_perm && args->option_v) {
+    if (actual_perm == new_perm && args->option_v) 
+	{
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", path, new_perm, mode);
     }
-    else if (actual_perm != new_perm && (args->option_c || args->option_v)) {
-		    oct_to_mode(actual_perm, mode);
+    else if (actual_perm != new_perm && (args->option_c || args->option_v)) 
+	{
+		oct_to_mode(actual_perm, mode);
         fprintf(stdout, "mode of '%s' changed from 0%o (%s) ", path, actual_perm, mode);
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "to 0%o (%s)\n", new_perm, mode);
@@ -335,33 +360,48 @@ void ChangePermissions(const struct Arguments *args, char *path)
 
 }
 
-void ProcessRecursive(const struct Arguments *args, char *path)
+void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Arguments *args)
 {
-	DIR *dir = opendir(path); //opens directory
+	DIR *dir = opendir(args->path_name); //opens directory
 	struct dirent *file;
 
 	while ((file = readdir(dir)) != NULL)
 	{
 		struct stat path_stat;
-		char *path_ = malloc(sizeof(path) + sizeof('/') + sizeof(file->d_name));
-		sprintf(path_, "%s/%s", path, file->d_name);
+		char *path_ = malloc(sizeof(args->path_name) + sizeof('/') + sizeof(file->d_name));
+		sprintf(path_, "%s/%s", args->path_name, file->d_name);
 		stat(path_, &path_stat);
 
-        //if is a regular file ("base case")
-		if (S_ISREG(path_stat.st_mode)) 
-		{
-			//fprintf(stdout, "	%s/%s\n", path, file->d_name);
-			ChangePermissions(args, path_);
-		}
+		ChangePermissions(args, path_);
 
         //verififies if is a directory and ignores the parent directory (..) and the current directory (.)
-		else if (S_ISDIR(path_stat.st_mode) && strcmp(file->d_name, "..") != 0 && strcmp(file->d_name, ".") != 0)
+		if (S_ISDIR(path_stat.st_mode) && strcmp(file->d_name, "..") != 0 && strcmp(file->d_name, ".") != 0)
 		{
+			char *newargv[argc];
+			newargv[0] = "./xmod.o";
+			for (size_t i = 1; i <= argc-3; i++)
+			{
+				if(args->option_c)
+					newargv[i] = "-c";
+				else if(args->option_v)
+					newargv[i] = "-v";
+				else if(args->option_R)
+					newargv[i] = "-R";
+			}
+			if(args->mode_is_octal)
+				sprintf(newargv[argc-2],"%d",args->mode_octal);
+				
+			else if(!args->mode_is_octal)
+				newargv[argc-2] = args->mode;
+			
+			newargv[argc-1] = path_;
+			
 			pid_t child_pid = fork();
 			int status;
 			if (child_pid == 0)
 			{
-				ProcessRecursive(args, path_); //explores the sub-directory in the new process (child process)
+				//ProcessRecursive(args, path_); //explores the sub-directory in the new process (child process)
+				execve("./xmod.o", newargv, envp);
 				return;
 			}
 			else
@@ -374,7 +414,7 @@ void ProcessRecursive(const struct Arguments *args, char *path)
 
 }
 
-//signal handler
+//signal handler;
 static void signal_func(int signo){
 
   hanlder_flag = true;
@@ -422,7 +462,7 @@ void WriteLog(FILE *regists_file, double time, int pid, char info[]){
     fprintf(regists_file,"%4.2f ms ;  %d\t ; %s\t ; \n", time, getpid(), info);
 }
 
-int main( int argc, char *argv[], char *envp[])  
+int main(int argc, char *argv[], char *envp[])  
 {
     struct Arguments args;
     clock_t start, end;
@@ -446,7 +486,7 @@ int main( int argc, char *argv[], char *envp[])
 	if(args.option_c || args.option_v)
 		ChangePermissions(&args, args.path_name);
 	else if(args.option_R)
-		ProcessRecursive(&args, args.path_name);
+		ProcessRecursive(argc, argv, envp, &args);
     
 
     //infinte cicle to check CTRL + C signal

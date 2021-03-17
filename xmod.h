@@ -42,6 +42,7 @@ void oct_to_mode(int octal, char *mode);
 
 void ChangePermissions(const struct Arguments *args, char *path);
 
-void ProcessRecursive(const struct Arguments *args, char *path);
+void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Arguments *args);
 
 bool WriteSignalInfo(bool handler_flag, const struct Arguments *args);
+
