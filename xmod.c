@@ -1,6 +1,5 @@
 #include "xmod.h"
 
-struct Arguments args;
 int nfmod = 0;
 bool hanlder_flag = false;
 
@@ -382,14 +381,14 @@ static void signal_func(int signo){
 }
 
 //writes info about signal and process it
-bool WriteSignalInfo(bool handler_flag){
+bool WriteSignalInfo(bool handler_flag, const struct Arguments *args){
 
   char *buffer = NULL;
   size_t n;
   int answer = 0;
 
   if(hanlder_flag == true){
-    fprintf(stdout, "\n%d ;\t%s ;\t %d\t\n", getpid(), args.path_name, nfmod); //do nº de ficheiros encontrados e o nº de ficheiros modificados
+    fprintf(stdout, "\n%d ;\t%s ;\t %d\t\n", getpid(), args->path_name, nfmod); //do nº de ficheiros encontrados e o nº de ficheiros modificados
     do{
       fprintf(stdout,"Exit or continue program? (E/C)");
       getline(&buffer, &n, stdin);
@@ -400,9 +399,6 @@ bool WriteSignalInfo(bool handler_flag){
       else if(strncasecmp(buffer,"C",1)==0){
         answer = 0;
         break;
-      }
-      else{
-        exit(EXIT_FAILURE);
       }
     }while(1);
 
@@ -424,7 +420,7 @@ bool WriteSignalInfo(bool handler_flag){
 
 int main( int argc, char *argv[], char *envp[])  
 {
-
+    struct Arguments args;
     clock_t start, end;
     struct tms t;
     long ticks;
@@ -451,7 +447,7 @@ int main( int argc, char *argv[], char *envp[])
 
     //infinte cicle to check CTRL + C signal
     for( ; ;){
-      if(WriteSignalInfo(hanlder_flag)){
+      if(WriteSignalInfo(hanlder_flag, &args)){
         break;
       }
     }

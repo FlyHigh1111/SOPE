@@ -44,4 +44,4 @@ void ChangePermissions(const struct Arguments *args, char *path);
 
 void ProcessRecursive(const struct Arguments *args, char *path);
 
-bool WriteSignalInfo(bool handler_flag);
+bool WriteSignalInfo(bool handler_flag, const struct Arguments *args);
