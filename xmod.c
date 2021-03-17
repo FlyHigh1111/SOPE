@@ -444,7 +444,6 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 			{
 				//ProcessRecursive(args, path_); //explores the sub-directory in the new process (child process)
 				execve("./xmod.o", newargv, envp);
-        nfmod++;
 				return;
 			}
 			else
@@ -488,11 +487,9 @@ bool WriteSignalInfo(bool handler_flag, const struct Arguments *args){
     free(buffer);
 
     if(answer == 1){
-      handler_flag = false;
       exit(0);
     }
     else{
-      handler_flag = false;
       return true;
     }
 
@@ -515,12 +512,8 @@ int main(int argc, char *argv[], char *envp[])
     long ticks;
     struct sigaction sig;
 
-
     sig.sa_handler = signal_func;
-    sig.sa_flags = 0;
-    sigemptyset(&(sig.sa_mask));
-    sigaddset(&(sig.sa_mask), SIGINT);
-
+    sig.sa_flags = SA_RESTART;
 
     //check if CTRL + C was pressed
     sigaction(SIGINT,&sig, NULL);
@@ -539,9 +532,10 @@ int main(int argc, char *argv[], char *envp[])
     
 
     //infinte cicle to check CTRL + C signal
-    while(1){
-    if(WriteSignalInfo(hanlder_flag, &args));
-    break;
+    for( ; ;){
+      if(WriteSignalInfo(hanlder_flag, &args)){
+        break;
+      }
     }
 
     //file with regists
