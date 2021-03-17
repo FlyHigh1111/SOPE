@@ -1,5 +1,8 @@
 #include "xmod.h"
 
+struct Arguments args;
+int nfmod = 0;
+
 static void signal_func(int);
 
 void PrintError(int error)
@@ -49,32 +52,6 @@ FILE* GetRegistsFile()
 
     FILE* file = fopen(s, "w+");
     return file;    
-}
-
-//signal handler
-static void signal_func(int signo){
-
-  char term, buf[50];
-
-  //Get the actual directory
-  getcwd(buf,sizeof(buf));
-
-  fprintf(stdout, "\n%d ;\t%s ;\t\n", getpid(), buf); //tem de se dar print do file_path do nº de ficheiros encontrados e o nº de ficheiros modificados
-
-  fprintf(stdout,"Exit or continue program? (E/C)");
-  scanf("%c", &term);
-  
-  if(term == 'C' || term == 'c'){
-    return;
-  }
-  else if(term == 'E' || term == 'e'){
-    exit(EXIT_SUCCESS);
-  }
-  else{
-    printf("Error! Please enter a valid character.\n");
-    exit(EXIT_FAILURE);
-  }
-  //FALTA MANDAR ESCREVER O SINAL NO LOGFILE?
 }
 
 void InitializeArguments(int argc, char *argv[], struct Arguments *args)
@@ -353,6 +330,7 @@ void ChangePermissions(const struct Arguments *args, char *path)
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "to 0%o (%s)\n", new_perm, mode);
     }
+    nfmod++;
 	return;
 
 }
@@ -396,21 +374,41 @@ void ProcessRecursive(const struct Arguments *args, char *path)
 
 }
 
+//signal handler
+static void signal_func(int signo){
 
+  fprintf(stdout, "\n%d ;\t%s ;\t %d\t\n", getpid(), args.path_name, nfmod); //do nº de ficheiros encontrados e o nº de ficheiros modificados
 
+  fprintf(stdout,"Exit or continue program? (E/C)");
+  scanf("%c", &term);
+  
+  if(term == 'C' || term == 'c'){
+    kill(getpid(),SIGCONT);
+    return;
+  }
+  else if(term == 'E' || term == 'e'){
+    exit(EXIT_SUCCESS);
+  }
+  else{
+    printf("Error! Please enter a valid character.\n");
+    exit(EXIT_FAILURE);
+  }
+  //FALTA MANDAR ESCREVER O SINAL NO LOGFILE?
+}
 
 int main( int argc, char *argv[], char *envp[])  
 {
-    struct Arguments args;
+
     clock_t start, end;
     struct tms t;
     long ticks;
-    //struct sigaction sig;
+    struct sigaction sig;
 
-    //sig.sa_handler = signal_func;
+    sig.sa_handler = signal_func;
+    sig.sa_flags = SA_RESTART;
 
     //check if CTRL + C was pressed
-    //sigaction(SIGINT,&sig, NULL);
+    sigaction(SIGINT,&sig, NULL);
 
 
     //starts counting time
@@ -426,7 +424,7 @@ int main( int argc, char *argv[], char *envp[])
     
 
     //infinte cicle to check CTRL + C signal
-    //for( ; ;);
+    for( ; ;);
 
     //file with regists
     FILE* regists_file = GetRegistsFile();
