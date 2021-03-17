@@ -25,10 +25,8 @@ void PrintError(int error)
 			fprintf(stderr, "missing operand");
 			break;
 		case 2:
-			fprintf(stderr, "invalid options");
 			break;
 		case 3:
-			fprintf(stderr, "invalid number of options");
 			break;
 		case 4:
 			fprintf(stderr, "invalid mode");
@@ -46,8 +44,52 @@ void PrintError(int error)
 			fprintf(stderr, "unable to set file permissions");
 			perror("");
 			break;
+		default:
+        {
+			switch (errno)
+			{
+      			case ENOENT:
+        			fprintf(stderr, "the file does not exist.");
+      				break;
+      			case EACCES: 
+        			fprintf(stderr, "search permission is denied on a component of the path prefix.");
+      				break;
+      			case EFAULT:
+        			fprintf(stderr, "pathname points outside your accessible address space.");
+      				break;
+      			case EIO:
+        			fprintf(stderr, "an I/O error occurred.");
+      				break;
+      			case ELOOP:
+        			fprintf(stderr, "too many symbolic links were encountered in resolving pathname.");
+      				break;
+      			case ENAMETOOLONG:
+        			fprintf(stderr, "pathname is too long.");
+      				break;
+      			case ENOMEM:
+        			fprintf(stderr, "insufficient kernel memory was available.");
+      				break;
+      			case ENOTDIR:
+        			fprintf(stderr, "a component of the path prefix is not a directory.");
+      				break;
+      			case EPERM:
+        			fprintf(stderr, "the effective UID does not match the owner of the file, and the process is not privileged, or\nThe file is marked immutable or append-only.");
+      				break;
+      			case EROFS:
+        			fprintf(stderr, "the named file resides on a read-only filesystem.\n");
+      				break;
+      			case EBADF:
+        			fprintf(stderr, "the file descriptor fd is not valid.\n");
+      				break;
+      			default:
+        			fprintf(stderr, "an error ocurred.\n");
+      				break;
+    		}  
+
+		}
 
 	}
+	
 	fprintf(stderr, "\nTry './xmod.o --help' for more information.\n");
 	exit(1);
 }
@@ -86,7 +128,7 @@ void InitializeArguments(int argc, char *argv[], struct Arguments *args)
         {
             if(strcmp(argv[j+1], "-v") != 0 && strcmp(argv[j+1], "-c") != 0 && strcmp(argv[j+1],"-R") != 0) 
 			{
-				PrintError(2);
+				PrintError(1);
 			}
             if(strcmp(argv[j+1], "-v") == 0)
 			{
@@ -104,7 +146,7 @@ void InitializeArguments(int argc, char *argv[], struct Arguments *args)
 
 	}
 	else
-		PrintError(3);
+		PrintError(1);
 
     //verifies mode
     char *mode = argv[num_options + 1];
