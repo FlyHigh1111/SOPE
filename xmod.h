@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/times.h>
+#include <strings.h>
 
 struct Arguments
 {
@@ -42,3 +43,5 @@ void oct_to_mode(int octal, char *mode);
 void ChangePermissions(const struct Arguments *args, char *path);
 
 void ProcessRecursive(const struct Arguments *args, char *path);
+
+bool WriteSignalInfo(bool handler_flag);

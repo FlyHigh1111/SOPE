@@ -2,6 +2,7 @@
 
 struct Arguments args;
 int nfmod = 0;
+bool hanlder_flag = false;
 
 static void signal_func(int);
 
@@ -377,25 +378,48 @@ void ProcessRecursive(const struct Arguments *args, char *path)
 //signal handler
 static void signal_func(int signo){
 
-  char term;
+  hanlder_flag = true;
+}
 
-  fprintf(stdout, "\n%d ;\t%s ;\t %d\t\n", getpid(), args.path_name, nfmod); //do nº de ficheiros encontrados e o nº de ficheiros modificados
+//writes info about signal and process it
+bool WriteSignalInfo(bool handler_flag){
 
-  fprintf(stdout,"Exit or continue program? (E/C)");
-  scanf("%c", &term);
-  
-  if(term == 'C' || term == 'c'){
-    kill(getpid(),SIGCONT);
-    return;
-  }
-  else if(term == 'E' || term == 'e'){
-    exit(EXIT_SUCCESS);
+  char *buffer = NULL;
+  size_t n;
+  int answer = 0;
+
+  if(hanlder_flag == true){
+    fprintf(stdout, "\n%d ;\t%s ;\t %d\t\n", getpid(), args.path_name, nfmod); //do nº de ficheiros encontrados e o nº de ficheiros modificados
+    do{
+      fprintf(stdout,"Exit or continue program? (E/C)");
+      getline(&buffer, &n, stdin);
+      if(strncasecmp(buffer,"E",1)==0){
+        answer = 1;
+        break;
+      }
+      else if(strncasecmp(buffer,"C",1)==0){
+        answer = 0;
+        break;
+      }
+      else{
+        exit(EXIT_FAILURE);
+      }
+    }while(1);
+
+    free(buffer);
+
+    if(answer == 1){
+      exit(0);
+    }
+    else{
+      return true;
+    }
+
   }
   else{
-    printf("Error! Please enter a valid character.\n");
-    exit(EXIT_FAILURE);
+    return false;
   }
-  //FALTA MANDAR ESCREVER O SINAL NO LOGFILE?
+
 }
 
 int main( int argc, char *argv[], char *envp[])  
@@ -426,7 +450,11 @@ int main( int argc, char *argv[], char *envp[])
     
 
     //infinte cicle to check CTRL + C signal
-    for( ; ;);
+    for( ; ;){
+      if(WriteSignalInfo(hanlder_flag)){
+        break;
+      }
+    }
 
     //file with regists
     FILE* regists_file = GetRegistsFile();
