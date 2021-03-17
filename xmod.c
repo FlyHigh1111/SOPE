@@ -279,7 +279,7 @@ void oct_to_mode(int octal, char *mode)
   int temp;
   for (int i = 0; i != 3; i++) {
 
-    if (i == 0) temp = octal_n;
+    if (i == 0) temp = octal_n/100;
     else if (i == 1) temp = (octal_n/10) - ((octal_n/100)*10);
     else if (i == 2) temp = octal_n - ((octal_n/10)*10);
 
@@ -376,6 +376,8 @@ void ProcessRecursive(const struct Arguments *args, char *path)
 
 //signal handler
 static void signal_func(int signo){
+
+  char term;
 
   fprintf(stdout, "\n%d ;\t%s ;\t %d\t\n", getpid(), args.path_name, nfmod); //do nº de ficheiros encontrados e o nº de ficheiros modificados
 
