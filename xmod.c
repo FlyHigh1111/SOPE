@@ -418,6 +418,10 @@ bool WriteSignalInfo(bool handler_flag, const struct Arguments *args){
 
 }
 
+void WriteLog(FILE *regists_file, double time, int pid, char info[]){
+    fprintf(regists_file,"%4.2f ms ;  %d\t ; %s\t ; \n", time, getpid(), info);
+}
+
 int main( int argc, char *argv[], char *envp[])  
 {
     struct Arguments args;
@@ -459,9 +463,10 @@ int main( int argc, char *argv[], char *envp[])
     end = times(&t);
 
     //puts informations on the regists file
-    fprintf(regists_file, "%4.2f ms ;  %d\t\n", (double)(end - start)*1000/ticks, getpid());
+    //fprintf(regists_file, "%4.2f ms ;  %d\t\n", (double)(end - start)*1000/ticks, getpid());
+    WriteLog(regists_file,(double)(end - start)*1000/ticks, getpid(),"TESTE");
+
 
     fclose(regists_file);
 	return 0;
 }
- 
