@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "xmod.h": "c"
+        "xmod.h": "c",
+        "ctype.h": "c"
     }
 }

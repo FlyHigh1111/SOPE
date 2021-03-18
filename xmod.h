@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/times.h>
 #include <strings.h>
+#include <ctype.h>
 
 struct Arguments
 {

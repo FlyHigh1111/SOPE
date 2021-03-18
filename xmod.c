@@ -463,14 +463,17 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
  hanlder_flag = true;
 }*/
 static void signal_func(int signo){
-  char resp='\0';
+  //char resp='\0';
+ char *resp=(char*)malloc(2*sizeof(char));
+ size_t n=2;
   while(1){
     printf("Exit or continue program? (E/C)");
-    scanf("%c",&resp);
-    if(strchr("EC", resp)!=NULL)
+    getline(&resp,&n,stdin);
+    resp[1]='\0';
+    if(strcmp(resp,"E")==0 || strcmp(resp,"C")==0)
       break;
     }
-  if (resp=='E')
+  if (strcmp(resp,"E")==0)
     exit(0);
 }
 
