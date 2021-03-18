@@ -415,11 +415,15 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 		sprintf(path_, "%s/%s", args->path_name, file->d_name);
 		stat(path_, &path_stat);
 
-		ChangePermissions(args, path_);
-
-        //verififies if is a directory and ignores the parent directory (..) and the current directory (.)
-		if (S_ISDIR(path_stat.st_mode) && strcmp(file->d_name, "..") != 0 && strcmp(file->d_name, ".") != 0)
+		//if is a regular file ("base case")
+		if (S_ISREG(path_stat.st_mode)) 
 		{
+			ChangePermissions(args, path_);
+		}
+        //verififies if is a directory and ignores the parent directory (..) and the current directory (.)
+		else if (S_ISDIR(path_stat.st_mode) && strcmp(file->d_name, "..") != 0 && strcmp(file->d_name, ".") != 0)
+		{
+			ChangePermissions(args, path_);
 			char *newargv[argc];
 			newargv[0] = "./xmod.o";
 			for (size_t i = 1; i <= argc-3; i++)
@@ -433,19 +437,20 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 			}
 			if(args->mode_is_octal)
 				sprintf(newargv[argc-2],"%d",args->mode_octal);
-				
 			else if(!args->mode_is_octal)
 				newargv[argc-2] = args->mode;
 			
 			newargv[argc-1] = path_;
+
+			newargv[argc] = NULL;
 			
 			pid_t child_pid = fork();
 			int status;
 			if (child_pid == 0)
 			{
 				//ProcessRecursive(args, path_); //explores the sub-directory in the new process (child process)
-				execve("./xmod.o", newargv, envp);
-        //if(GetFilePermissions(newargv[argc - 1]) == args->mode)
+				if(execve("./xmod.o", newargv, envp) == -1)
+					perror("execve");
 				return;
 			}
 			else
