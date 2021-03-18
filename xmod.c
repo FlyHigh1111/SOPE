@@ -463,18 +463,41 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
  hanlder_flag = true;
 }*/
 static void signal_func(int signo){
-  //char resp='\0';
- char *resp=(char*)malloc(2*sizeof(char));
- size_t n=2;
+
+  //Stops the actual process
+  //WriteLog(GetRegistsFile(),0,getpid(),"Signal TSTP received.");
+  kill(0, SIGTSTP);
+
+  char *buffer = NULL;
+  size_t n;
+  int answer = 0;
   while(1){
     printf("Exit or continue program? (E/C)");
-    getline(&resp,&n,stdin);
-    resp[1]='\0';
-    if(strcmp(resp,"E")==0 || strcmp(resp,"C")==0)
+    getline(&buffer,&n,stdin);
+    if(strncasecmp(buffer, "E", 1)==0){
+      answer = 1;
       break;
     }
-  if (strcmp(resp,"E")==0)
+    else if(strncasecmp(buffer, "C", 1) == 0){
+      answer = 0;
+      break;
+    }
+  }
+  free(buffer);
+
+  if (answer==1){
+    //WriteLog(GetRegistsFile,0,getpid(),"Signal USR1 sent.");
+    kill(0, SIGUSR1);
     exit(0);
+  }
+  else if(answer == 0){
+    //WriteLog(GetRegistsFile,0,getpid(),"Signal CONT sent.");
+    kill(0, SIGCONT);
+  }
+}
+
+static void exit_handler(int signo){
+  exit(0);
 }
 
 //writes info about signal and process it
@@ -526,12 +549,36 @@ int main(int argc, char *argv[], char *envp[])
     struct tms t;
     long ticks;
     struct sigaction sig;
+    struct sigaction usr1;
+    struct sigaction tstp;
+    struct sigaction cont;
 
     sig.sa_handler = signal_func;
     sig.sa_flags = SA_RESTART;
-
+    sigemptyset(&(sig.sa_mask));
+    sigaddset(&(sig.sa_mask), SIGINT);
+    sigaddset(&(sig.sa_mask), SIGUSR1);
+    sigaddset(&(sig.sa_mask), SIGUSR2);
+    sigaddset(&(sig.sa_mask), SIGTSTP);
+    sigaddset(&(sig.sa_mask), SIGCONT);
     //check if CTRL + C was pressed
     sigaction(SIGINT,&sig, NULL);
+
+    usr1.sa_handler = exit_handler;
+    usr1.sa_flags = 0;
+    sigemptyset(&(usr1.sa_mask));
+    sigaction(SIGUSR1, &usr1, NULL);
+
+    tstp.sa_handler = SIG_IGN;
+    tstp.sa_flags = 0;
+    sigemptyset(&(tstp.sa_mask));
+    sigaction(SIGTSTP, &tstp, NULL);
+
+
+    cont.sa_handler = SIG_IGN;
+    cont.sa_flags = 0;
+    sigemptyset(&(cont.sa_mask));
+    sigaction(SIGCONT, &cont, NULL);
 
 
     //starts counting time
