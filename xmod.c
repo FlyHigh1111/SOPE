@@ -532,7 +532,6 @@ int main(int argc, char *argv[], char *envp[])
 	if(args.option_R)
 		ProcessRecursive(argc, argv, envp, &args);
     
-
     //infinte cicle to check CTRL + C signal
     for( ; ;){
       if(WriteSignalInfo(hanlder_flag, &args)){
