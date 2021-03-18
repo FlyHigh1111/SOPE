@@ -1,7 +1,8 @@
 #include "xmod.h"
 
-int nfmod = 0;
 bool hanlder_flag = false;
+static int nfmod = 0;
+static int nftot = 0;
 
 static void signal_func(int);
 
@@ -444,6 +445,7 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 			{
 				//ProcessRecursive(args, path_); //explores the sub-directory in the new process (child process)
 				execve("./xmod.o", newargv, envp);
+        //if(GetFilePermissions(newargv[argc - 1]) == args->mode)
 				return;
 			}
 			else
