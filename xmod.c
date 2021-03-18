@@ -338,13 +338,12 @@ int GetNewPermissions(int form_perm, char *new_mode)
 
 void oct_to_mode(int octal, char *mode)
 {
-  char snum[3];
+  char snum[4]; //alteramos 3->4
   sprintf(snum, "%o", octal);
   int octal_n = atoi(snum);
   int temp;
   for (int i = 0; i != 3; i++) 
   {
-
     if (i == 0) temp = octal_n/100;
     else if (i == 1) temp = (octal_n/10) - ((octal_n/100)*10);
     else if (i == 2) temp = octal_n - ((octal_n/10)*10);
@@ -363,13 +362,11 @@ void oct_to_mode(int octal, char *mode)
       mode[i*3+2] = 'x';
     }
     else mode[i*3+2] = '-';
-    
   }
 }
 
 
-void ChangePermissions(const struct Arguments *args, char *path)
-{
+void ChangePermissions(const struct Arguments *args, char *path){
 	int actual_perm = GetFilePermissions(path);
     int new_perm;
     if (args->mode_is_octal == true)
@@ -378,16 +375,13 @@ void ChangePermissions(const struct Arguments *args, char *path)
     {  
       new_perm = GetNewPermissions(actual_perm, args->mode);
     }
-
     //changes the permissions
     int c = chmod(path, new_perm);
     if(c == -1)
 		PrintError(8);
-
     //-v or -c implementation
-    char mode[9] = "";
-    if (actual_perm == new_perm && args->option_v) 
-	{
+    char mode[10] = "";
+    if (actual_perm == new_perm && args->option_v) {   
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", path, new_perm, mode);
     }
@@ -464,13 +458,24 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 }
 
 //signal handler;
-static void signal_func(int signo){
+/*static void signal_func(int signo){
 
-  hanlder_flag = true;
+ hanlder_flag = true;
+}*/
+static void signal_func(int signo){
+  char resp='\0';
+  while(1){
+    printf("Exit or continue program? (E/C)");
+    scanf("%c",&resp);
+    if(strchr("EC", resp)!=NULL)
+      break;
+    }
+  if (resp=='E')
+    exit(0);
 }
 
 //writes info about signal and process it
-bool WriteSignalInfo(bool handler_flag, const struct Arguments *args){
+/*bool WriteSignalInfo(bool handler_flag, const struct Arguments *args){
 
   char *buffer = NULL;
   size_t n;
@@ -505,7 +510,7 @@ bool WriteSignalInfo(bool handler_flag, const struct Arguments *args){
     return false;
   }
 
-}
+}*/
 
 void WriteLog(FILE *regists_file, double time, int pid, char info[]){
     fprintf(regists_file,"%4.2f ms ;  %d\t ; %s\t ; \n", time, getpid(), info);
@@ -531,18 +536,18 @@ int main(int argc, char *argv[], char *envp[])
     ticks = sysconf(_SC_CLK_TCK);
 
     InitializeArguments(argc, argv, &args);
-
-	if(args.option_c || args.option_v)
+	if(args.option_c || args.option_v){
 		ChangePermissions(&args, args.path_name);
+  }
 	if(args.option_R)
 		ProcessRecursive(argc, argv, envp, &args);
-    
+    sleep(10);
     //infinte cicle to check CTRL + C signal
-    for( ; ;){
+   /*for( ; ;){
       if(WriteSignalInfo(hanlder_flag, &args)){
         break;
       }
-    }
+    }*/
 
     //file with regists
     FILE* regists_file = GetRegistsFile();
@@ -553,7 +558,7 @@ int main(int argc, char *argv[], char *envp[])
     //puts informations on the regists file
     //fprintf(regists_file, "%4.2f ms ;  %d\t\n", (double)(end - start)*1000/ticks, getpid());
     WriteLog(regists_file,(double)(end - start)*1000/ticks, getpid(),"TESTE");
-
+printf("P5 \n");
 
     fclose(regists_file);
 	return 0;
