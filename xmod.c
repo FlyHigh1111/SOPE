@@ -1,4 +1,4 @@
-#include "xmod.h"
+#include "./xmod.h"
 
 bool hanlder_flag = false;
 static int nfmod = 0;
@@ -339,7 +339,7 @@ int GetNewPermissions(int form_perm, char *new_mode)
 void oct_to_mode(int octal, char *mode)
 {
   char snum[4]; //alteramos 3->4
-  sprintf(snum, "%o", octal);
+  snprintf(snum, sizeof(snum), "%o", octal);
   int octal_n = atoi(snum);
   int temp;
   for (int i = 0; i != 3; i++) 
