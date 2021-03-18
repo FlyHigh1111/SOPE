@@ -418,7 +418,7 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 		else if (S_ISDIR(path_stat.st_mode) && strcmp(file->d_name, "..") != 0 && strcmp(file->d_name, ".") != 0)
 		{
 			ChangePermissions(args, path_);
-			char *newargv[argc];
+			char *newargv[argc+1];
 			newargv[0] = "./xmod.o";
 			for (size_t i = 1; i <= argc-3; i++)
 			{
@@ -442,7 +442,6 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 			int status;
 			if (child_pid == 0)
 			{
-				//ProcessRecursive(args, path_); //explores the sub-directory in the new process (child process)
 				if(execve("./xmod.o", newargv, envp) == -1)
 					perror("execve");
 				return;
@@ -457,8 +456,8 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 
 }
 
-//signal handler;
-/*static void signal_func(int signo){
+/*signal handler;
+static void signal_func(int signo){
 
  hanlder_flag = true;
 }*/
@@ -586,11 +585,11 @@ int main(int argc, char *argv[], char *envp[])
     ticks = sysconf(_SC_CLK_TCK);
 
     InitializeArguments(argc, argv, &args);
-	if(args.option_c || args.option_v){
+	if(!args.option_R)
+	{
 		ChangePermissions(&args, args.path_name);
-  }
-	if(args.option_R)
-		ProcessRecursive(argc, argv, envp, &args);
+  	}
+	ProcessRecursive(argc, argv, envp, &args);
     sleep(10);
     //infinte cicle to check CTRL + C signal
    /*for( ; ;){
@@ -608,8 +607,9 @@ int main(int argc, char *argv[], char *envp[])
     //puts informations on the regists file
     //fprintf(regists_file, "%4.2f ms ;  %d\t\n", (double)(end - start)*1000/ticks, getpid());
     WriteLog(regists_file,(double)(end - start)*1000/ticks, getpid(),"TESTE");
-printf("P5 \n");
 
     fclose(regists_file);
+
+	printf("fim processo \n");
 	return 0;
 }
