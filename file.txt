@@ -1,1 +1,1 @@
-10010.00 ms ;  16328	 ; TESTE	 ; 
+0.00 ms ;  5352	 ; Signal SIGINIT received.	 ; 

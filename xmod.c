@@ -109,6 +109,10 @@ FILE* GetRegistsFile()
     return file;    
 }
 
+void WriteLog(FILE *regists_file, double time, int pid, char info[]){
+    fprintf(regists_file,"%4.2f ms ;  %d\t ; %s\t ; \n", time, getpid(), info);
+}
+
 void InitializeArguments(int argc, char *argv[], struct Arguments *args)
 {
     if (argc < 2 || argc > 6 )
@@ -385,6 +389,7 @@ void ChangePermissions(const struct Arguments *args, char *path){
     if (actual_perm == new_perm && args->option_v) {   
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", path, new_perm, mode);
+        nftot++;
     }
     else if (actual_perm != new_perm && (args->option_c || args->option_v)) 
 	{
@@ -392,10 +397,15 @@ void ChangePermissions(const struct Arguments *args, char *path){
         fprintf(stdout, "mode of '%s' changed from 0%o (%s) ", path, actual_perm, mode);
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "to 0%o (%s)\n", new_perm, mode);
+        nftot++;
+        nfmod++;
     }
-    nfmod++;
 	return;
 
+}
+
+static void exit_child(int signo){
+  raise(SIGKILL);
 }
 
 void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Arguments *args)
@@ -443,6 +453,31 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 			int status;
 			if (child_pid == 0)
 			{
+        struct sigaction int_ign_action;
+        int_ign_action.sa_handler = SIG_IGN;
+        int_ign_action.sa_flags = 0;
+        sigemptyset(&(int_ign_action.sa_mask));
+        sigaction(SIGINT, &int_ign_action, NULL);
+
+        struct sigaction usr1_child;
+        usr1_child.sa_handler = exit_child;
+        usr1_child.sa_flags = 0;
+        sigemptyset(&(usr1_child.sa_mask));
+        sigaction(SIGUSR1, &usr1_child, NULL);
+
+        struct sigaction tstp_action;
+        tstp_action.sa_handler = SIG_DFL;
+        tstp_action.sa_flags = 0;
+        sigemptyset(&(tstp_action.sa_mask));
+        sigaction(SIGTSTP, &tstp_action, NULL);
+
+        struct sigaction cont_action;
+        cont_action.sa_handler = SIG_DFL;
+        cont_action.sa_flags = 0;
+        sigemptyset(&(cont_action.sa_mask));
+        sigaction(SIGCONT, &cont_action, NULL); 
+
+
 				if(execve("./xmod.o", newargv, envp) == -1)
 					perror("execve");
 				return;
@@ -463,44 +498,66 @@ static void signal_func(int signo){
  hanlder_flag = true;
 }*/
 static void signal_func(int signo){
+  
+switch (signo)
+{
+  case SIGINT:
 
-  //Stops the actual process
-  //WriteLog(GetRegistsFile(),0,getpid(),"Signal TSTP received.");
-  kill(0, SIGTSTP);
+    //Stops the actual process
+    WriteLog(GetRegistsFile(),0.0,getpid(),"Signal SIGINIT received.");
+    kill(0, SIGTSTP);
 
-  char *buffer = NULL;
-  size_t n;
-  int answer = 0;
-  while(1)
-  {
-    printf("Exit or continue program? (E/C)");
-    getline(&buffer,&n,stdin);
-    if(strncasecmp(buffer, "E", 1)==0)
-	{
-      answer = 1;
-      break;
+    char *buffer = NULL;
+    size_t n;
+    int answer = 0;
+    while(1)
+    {
+      printf("Exit or continue program? (E/C)");
+      getline(&buffer,&n,stdin);
+      if(strncasecmp(buffer, "E", 1)==0)
+    {
+        answer = 1;
+        break;
+      }
+      else if(strncasecmp(buffer, "C", 1) == 0){
+        answer = 0;
+        break;
+      }
+    else
+    {
+      PrintError(2);
     }
-    else if(strncasecmp(buffer, "C", 1) == 0){
-      answer = 0;
-      break;
     }
-	else
-	{
-		PrintError(2);
-	}
-  }
-  free(buffer);
+    free(buffer);
 
-  if (answer==1){
-    //WriteLog(GetRegistsFile,0,getpid(),"Signal USR1 sent.");
-    kill(0, SIGUSR1);
-    exit(0);
-  }
-  else if(answer == 0){
-    //WriteLog(GetRegistsFile,0,getpid(),"Signal CONT sent.");
-    kill(0, SIGCONT);
+    if (answer==1){
+      //WriteLog(GetRegistsFile,0,getpid(),"Signal USR1 sent.");
+      kill(0, SIGUSR1);
+      WriteLog(GetRegistsFile(), 0.0, getpid(), "SIGUSR1 SENT!");
+      exit(0);
+    }
+    else if(answer == 0){
+      //WriteLog(GetRegistsFile,0,getpid(),"Signal CONT sent.");
+      kill(0, SIGCONT);
+    }
+    break;
+
+  case SIGUSR1:
+
+    WriteLog(GetRegistsFile(),0.0,getpid(),"SIGNAL SIGUSR1 received!");
+    break;
+
+  case SIGCONT:
+
+    WriteLog(GetRegistsFile(), 0.0, getpid(), "SIGNAL SIGCONT received!");
+    break;
+
+
+  default:
+    break;
   }
 }
+  
 
 static void exit_handler(int signo){
   exit(0);
@@ -544,10 +601,6 @@ static void exit_handler(int signo){
 
 }*/
 
-void WriteLog(FILE *regists_file, double time, int pid, char info[]){
-    fprintf(regists_file,"%4.2f ms ;  %d\t ; %s\t ; \n", time, getpid(), info);
-}
-
 int main(int argc, char *argv[], char *envp[])  
 {
     struct Arguments args;
@@ -560,11 +613,10 @@ int main(int argc, char *argv[], char *envp[])
     struct sigaction cont;
 
     sig.sa_handler = signal_func;
-    sig.sa_flags = SA_RESTART;
+    sig.sa_flags = 0;
     sigemptyset(&(sig.sa_mask));
     sigaddset(&(sig.sa_mask), SIGINT);
     sigaddset(&(sig.sa_mask), SIGUSR1);
-    sigaddset(&(sig.sa_mask), SIGUSR2);
     sigaddset(&(sig.sa_mask), SIGTSTP);
     sigaddset(&(sig.sa_mask), SIGCONT);
     //check if CTRL + C was pressed
