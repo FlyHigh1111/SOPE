@@ -199,6 +199,25 @@ void InitializeArguments(int argc, char *argv[], struct Arguments *args)
     fclose(file);
     args->path_name = argv[num_options + 2];
 
+	struct stat s;
+	if(stat(args->path_name,&s) == 0)
+	{
+    	if(S_ISDIR(s.st_mode))
+    	{
+        	//it's a directory
+			args->is_dir = true;
+    	}
+    	else if(S_ISREG(s.st_mode))
+    	{
+        	//it's a file
+			args->is_dir = false;
+    	}
+    	else
+    	{
+        	//something else
+    	}
+	}
+
     return;
 }
 
@@ -427,6 +446,7 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 		sprintf(path_, "%s/%s", args->path_name, file->d_name);
 		stat(path_, &path_stat);
 
+
 		//if is a regular file ("base case")
 		if (S_ISREG(path_stat.st_mode)) 
 		{
@@ -615,8 +635,14 @@ int main(int argc, char *argv[], char *envp[])
 	{
 		ChangePermissions(&args, args.path_name);
   	}
-	if(args.option_R == true)
+	if(args.option_R == true && args.is_dir == false)
+	{
+		ChangePermissions(&args, args.path_name);
+	}
+	if(args.option_R == true && args.is_dir == true)
+	{
 		ProcessRecursive(argc, argv, envp, &args);
+	}
 	
 	
     //sleep(2);
