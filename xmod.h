@@ -26,7 +26,7 @@ struct Arguments
     bool option_R;      //true if mode '-R' was introduced
 };
 
-static void signal_func(int);
+static void SignalFunc(int);
 
 void PrintError(int error);//Prints Every Error Possible
 
@@ -40,7 +40,7 @@ int GetNewPermMask(char *new_mode);//Transform mode into a mask
 
 int GetNewPermissions(int form_perm, char *new_mode);//Determines new permission according to the mode and new mask and returns it 
 
-void oct_to_mode(int octal, char *mode);//Converts From Octal Mode To Mode
+void OctalToMode(int octal, char *mode);//Converts From Octal Mode To Mode
 
 void ChangePermissions(const struct Arguments *args, char *path);
 

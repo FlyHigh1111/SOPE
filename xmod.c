@@ -1,10 +1,10 @@
 #include "./xmod.h"
 
-/*bool hanlder_flag = false;
-static int nfmod = 0;
-static int nftot = 0;
+struct Arguments args;
+int nfmod = 0;
+int nftot = 0;
 
-static void signal_func(int);*/
+static void SignalFunc(int);
 
 void PrintManual()
 {
@@ -29,6 +29,7 @@ void PrintError(int error)
 			fprintf(stderr, "invalid character");
 			break;
 		case 3:
+			fprintf(stderr, "unable to set masks");
 			break;
 		case 4:
 			fprintf(stderr, "invalid mode");
@@ -46,7 +47,7 @@ void PrintError(int error)
 			fprintf(stderr, "unable to set file permissions");
 			perror("");
 			break;
-		case 9:
+		default:
         {
 			switch (errno)
 			{
@@ -86,8 +87,7 @@ void PrintError(int error)
       			default:
         			fprintf(stderr, "an error ocurred.\n");
       				break;
-    		} 
-			break; 
+    		}  
 
 		}
 
@@ -96,7 +96,6 @@ void PrintError(int error)
 	fprintf(stderr, "\nTry './xmod.o --help' for more information.\n");
 	exit(1);
 }
-
 
 FILE* GetRegistsFile()
 {
@@ -199,25 +198,6 @@ void InitializeArguments(int argc, char *argv[], struct Arguments *args)
     fclose(file);
     args->path_name = argv[num_options + 2];
 
-	struct stat s;
-	if(stat(args->path_name,&s) == 0)
-	{
-    	if(S_ISDIR(s.st_mode))
-    	{
-        	//it's a directory
-			args->is_dir = true;
-    	}
-    	else if(S_ISREG(s.st_mode))
-    	{
-        	//it's a file
-			args->is_dir = false;
-    	}
-    	else
-    	{
-        	//something else
-    	}
-	}
-
     return;
 }
 
@@ -230,24 +210,24 @@ int GetFilePermissions(const char *path_name)
   if (stat(path_name, &fileattrib) == 0)
   {
     file_mode = fileattrib.st_mode;
-    // Check owner permissions 
-    if ((file_mode & S_IRUSR)) //&& (fileMode & S_IREAD))
+    // Check permissions 
+    if ((file_mode & S_IRUSR)) 
       perm += 256;
-    if ((file_mode & S_IWUSR))// && (fileMode & S_IWRITE))
+    if ((file_mode & S_IWUSR))
       perm += 128;
-    if ((file_mode & S_IXUSR))// && (fileMode & S_IEXEC))
+    if ((file_mode & S_IXUSR))
       perm += 64;
-    if (file_mode & S_IRGRP) //&& (fileMode & S_IREAD))
+    if (file_mode & S_IRGRP) 
       perm += 32;
-    if (file_mode & S_IWGRP) //&& (fileMode & S_IWRITE))
+    if (file_mode & S_IWGRP)
       perm += 16;
-    if (file_mode & S_IXGRP) //&& (fileMode & S_IEXEC))
+    if (file_mode & S_IXGRP)
       perm += 8;
-    if (file_mode & S_IROTH) //&& (fileMode & S_IREAD))
+    if (file_mode & S_IROTH) 
       perm += 4;
-    if (file_mode & S_IWOTH) //&& (fileMode & S_IWRITE))
+    if (file_mode & S_IWOTH) 
       perm += 2;
-    if (file_mode & S_IXOTH) //&& (fileMode & S_IEXEC))
+    if (file_mode & S_IXOTH) 
       perm += 1;
   }
   else
@@ -261,10 +241,7 @@ int GetNewPermMask(char *new_mode)
   char users = new_mode[0];
   int new_perm = 0;
   if (strchr("augo",new_mode[0]))
-  { 
-    /*if (strchr("-+=",NewMode[0]))
-      users='t';
-    printf("P1\n");*/  
+  {   
     switch (users)
 	{
       case 'u':
@@ -311,25 +288,12 @@ int GetNewPermMask(char *new_mode)
               new_perm += 64 + 8 + 1;  
           }
         break; 
-      /*case 't':
-          for(int i=1;i<strlen(NewMode);i++){
-            if(NewMode[i]=='r')
-              NewPerm += 256 + 32 + 4;
-            else
-              if(NewMode[i]=='w')
-                NewPerm += 128 + 16 + 2;
-              else
-                if(NewMode[i]=='x')
-                  NewPerm += 64 + 8 + 1;  
-          }
-        break; */
       default:  
+	  	PrintError(3);
         break;     
     }
   }
-  
-  //printf("NewPerm: %d", NewPerm);
-  return new_perm;
+    return new_perm;
 }
 
 int GetNewPermissions(int form_perm, char *new_mode)
@@ -343,7 +307,6 @@ int GetNewPermissions(int form_perm, char *new_mode)
   	else
     	operator=new_mode[0];
 
-	//printf("NewMask: %d",new_mask);  
   	switch(operator)
 	{
     	case '+':
@@ -356,14 +319,15 @@ int GetNewPermissions(int form_perm, char *new_mode)
         	new_perm = new_mask;
       		break;
     	default:
+			PrintError(7);
         	return -1;
   	}
   return new_perm;
 }
 
-void oct_to_mode(int octal, char *mode)
+void OctalToMode(int octal, char *mode)
 {
-  char snum[4]; //alteramos 3->4
+  char snum[4]; 
   snprintf(snum, sizeof(snum), "%o", octal);
   int octal_n = atoi(snum);
   int temp;
@@ -390,53 +354,51 @@ void oct_to_mode(int octal, char *mode)
   }
 }
 
-
 void ChangePermissions(const struct Arguments *args, char *path)
 {
 	int actual_perm = GetFilePermissions(path);
     int new_perm;
+
     if (args->mode_is_octal == true)
       new_perm = args->mode_octal;
     else
     {  
       new_perm = GetNewPermissions(actual_perm, args->mode);
     }
+
     //changes the permissions
     int c = chmod(path, new_perm);
     if(c == -1)
-		PrintError(9);
+		PrintError(8);
+
     //-v or -c implementation
-    char mode[10] = "";
+    char mode[10];
     if (actual_perm == new_perm && args->option_v) {   
-        oct_to_mode(new_perm, mode);
+        OctalToMode(new_perm, mode);
         fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", path, new_perm, mode);
-        //nftot++;
+        nftot++;
     }
     else if (actual_perm != new_perm && (args->option_c || args->option_v)) 
 	{
-		oct_to_mode(actual_perm, mode);
+		OctalToMode(actual_perm, mode);
         fprintf(stdout, "mode of '%s' changed from 0%o (%s) ", path, actual_perm, mode);
-        oct_to_mode(new_perm, mode);
+        OctalToMode(new_perm, mode);
         fprintf(stdout, "to 0%o (%s)\n", new_perm, mode);
-        //nftot++;
-        //nfmod++;
+        nftot++;
+        nfmod++;
     }
 	return;
 
 }
 
-/*static void exit_child(int signo)
+static void ExitHandler(int signo)
 {
   raise(SIGKILL);
-}*/
+}
 
 void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Arguments *args)
 {
 	DIR *dir = opendir(args->path_name); //opens directory
-	if(dir == NULL)
-	{
-		PrintError(9);
-	}
 	struct dirent *file;
 
 	while ((file = readdir(dir)) != NULL)
@@ -445,7 +407,6 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 		char *path_ = malloc(sizeof(args->path_name) + sizeof('/') + sizeof(file->d_name));
 		sprintf(path_, "%s/%s", args->path_name, file->d_name);
 		stat(path_, &path_stat);
-
 
 		//if is a regular file ("base case")
 		if (S_ISREG(path_stat.st_mode)) 
@@ -456,62 +417,14 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 		else if (S_ISDIR(path_stat.st_mode) && strcmp(file->d_name, "..") != 0 && strcmp(file->d_name, ".") != 0)
 		{
 			ChangePermissions(args, path_);
-			char *newargv[argc+1];
-      for (int i=0;i<argc+1;i++)
-        newargv[i]=(char*)malloc(256);
-			newargv[0] = "./xmod.o";
-			for (size_t i = 1; i <= argc-3; i++)
-			{
-				if(args->option_c)
-					newargv[i] = "-c";
-				else if(args->option_v)
-					newargv[i] = "-v";
-				else if(args->option_R)
-					newargv[i] = "-R";
-			}
-			if(args->mode_is_octal)
-				sprintf(newargv[argc-2],"%d",args->mode_octal);
-			else if(!args->mode_is_octal)
-				newargv[argc-2] = args->mode;
-			
-			newargv[argc-1] = path_;
 
-			newargv[argc] = NULL;
+			argv[argc-1] = path_;
 			
 			pid_t child_pid = fork();
 			int status;
-			if (child_pid == -1)
+			if (child_pid == 0)
 			{
-				perror("fork");
-			}
-			else if (child_pid == 0)
-			{
-        		/*struct sigaction int_ign_action;
-        		int_ign_action.sa_handler = SIG_IGN;
-        		int_ign_action.sa_flags = 0;
-        		sigemptyset(&(int_ign_action.sa_mask));
-        		sigaction(SIGINT, &int_ign_action, NULL);
-
-        		struct sigaction usr1_child;
-        		usr1_child.sa_handler = exit_child;
-        		usr1_child.sa_flags = 0;
-        		sigemptyset(&(usr1_child.sa_mask));
-        		sigaction(SIGUSR1, &usr1_child, NULL);
-		
-        		struct sigaction tstp_action;
-        		tstp_action.sa_handler = SIG_DFL;
-        		tstp_action.sa_flags = 0;
-        		sigemptyset(&(tstp_action.sa_mask));
-        		sigaction(SIGTSTP, &tstp_action, NULL);
-		
-        		struct sigaction cont_action;
-        		cont_action.sa_handler = SIG_DFL;
-        		cont_action.sa_flags = 0;
-        		sigemptyset(&(cont_action.sa_mask));
-        		sigaction(SIGCONT, &cont_action, NULL); */
-
-
-				if(execve("./xmod.o", newargv, envp) == -1)
+				if(execve("./xmod.o", argv, envp) == -1)
 					perror("execve");
 				return;
 			}
@@ -525,110 +438,59 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 
 }
 
-/*signal handler;
-
-static void signal_func(int signo){
-
+static void SignalFunc(int signo)
+{
   char *buffer = NULL;
   size_t n;
   
-    
-    if(getpid() == getpgid(getpid())){
-      while(1){
-          printf("Exit or continue program? (E/C)");
-          getline(&buffer,&n,stdin);
-          if(strncasecmp(buffer, "E", 1)==0){
-            raise(SIGUSR1);
-            break;
-          }
-          else if(strncasecmp(buffer, "C", 1)==0){
-            raise(SIGCONT);
-            break;
-          }
-      }
+    if(getpid() == getpgid(getpid()))
+	{
+		fprintf(stdout,"%d ; %s ; %d ; %d\n",getpid(), args.path_name, nftot, nfmod);
+    	while(1)
+		{
+          	sleep(5);
+          	printf("Exit or continue program? (E/C)");
+          	getline(&buffer,&n,stdin);
+          	if(strncasecmp(buffer, "E", 1) == 0)
+		  	{
+            	raise(SIGUSR1);
+            	break;
+          	}
+			else if(strncasecmp(buffer, "C", 1)==0)
+			{
+            	raise(SIGCONT);
+            	break;
+          	}
+      	}
     }
-    else{
+	else
+	{
+      fprintf(stdout,"\n%d ; %s ; %d ; %d\n",getpid(),args.path_name, nftot, nfmod);
       raise(SIGSTOP);
     }
-    
-    ///Stops the actual process
-    WriteLog(GetRegistsFile(),0.0,getpid(),"Signal SIGINIT received.");
-    kill(0, SIGTSTP);
-
-    char *buffer = NULL;
-    size_t n;
-    int answer = 0;
-    while(1)
-    {
-      printf("Exit or continue program? (E/C)");
-      getline(&buffer,&n,stdin);
-      if(strncasecmp(buffer, "E", 1)==0)
-    {
-        answer = 1;
-        break;
-      }
-      else if(strncasecmp(buffer, "C", 1) == 0){
-        answer = 0;
-        break;
-      }
-    else
-    {
-      PrintError(2);
-    }
-    }
-    free(buffer);
-
-    if (answer==1){
-      //WriteLog(GetRegistsFile,0,getpid(),"Signal USR1 sent.");
-      kill(0, SIGUSR1);
-      WriteLog(GetRegistsFile(), 0.0, getpid(), "SIGUSR1 SENT!");
-      exit(0);
-    }
-    else if(answer == 0){
-      //WriteLog(GetRegistsFile,0,getpid(),"Signal CONT sent.");
-      kill(0, SIGCONT);
-    }
-
-    //--------------------------------------------------------------------
-
-  case SIGUSR1:
-
-    WriteLog(GetRegistsFile(),0.0,getpid(),"SIGNAL SIGUSR1 received!");
-    break;
-
-  case SIGCONT:
-
-    WriteLog(GetRegistsFile(), 0.0, getpid(), "SIGNAL SIGCONT received!");
-    break;
-
 }
   
-
-static void exit_handler(int signo){
-  raise(SIGKILL);
-}*/
-
 int main(int argc, char *argv[], char *envp[])  
 {
-    struct Arguments args;
     clock_t start, end;
     struct tms t;
-    long ticks;
-    /*struct sigaction sig;
+    int64_t ticks;
+    struct sigaction sig;
 
-    sig.sa_handler = signal_func;
+    sig.sa_handler = SignalFunc;
     sig.sa_flags = 0;
     sigemptyset(&(sig.sa_mask));
     sigaddset(&(sig.sa_mask), SIGINT);
     sigaddset(&(sig.sa_mask), SIGUSR1);
     sigaddset(&(sig.sa_mask), SIGTSTP);
     sigaddset(&(sig.sa_mask), SIGCONT);
+
     //check if CTRL + C was pressed
     sigaction(SIGINT,&sig, NULL);
 
     signal(SIGSTOP,SIG_DFL);
-    signal(SIGUSR1,exit_handler);
-    signal(SIGCONT, SIG_DFL);*/
+    signal(SIGUSR1,ExitHandler);
+    signal(SIGCONT, SIG_DFL);
 
 
     //starts counting time
@@ -637,27 +499,14 @@ int main(int argc, char *argv[], char *envp[])
 
     InitializeArguments(argc, argv, &args);
 
-	if(args.option_R == false)
+	if(!args.option_R)
 	{
 		ChangePermissions(&args, args.path_name);
   	}
-	if(args.option_R == true && args.is_dir == false)
-	{
-		ChangePermissions(&args, args.path_name);
-	}
-	if(args.option_R == true && args.is_dir == true)
+	else 
 	{
 		ProcessRecursive(argc, argv, envp, &args);
 	}
-	
-	
-    //sleep(2);
-    //infinte cicle to check CTRL + C signal
-   /*for( ; ;){
-      if(WriteSignalInfo(hanlder_flag, &args)){
-        break;
-      }
-    }*/
 
     //file with regists
     FILE* regists_file = GetRegistsFile();
@@ -666,11 +515,9 @@ int main(int argc, char *argv[], char *envp[])
     end = times(&t);
 
     //puts informations on the regists file
-    //fprintf(regists_file, "%4.2f ms ;  %d\t\n", (double)(end - start)*1000/ticks, getpid());
     WriteLog(regists_file,(double)(end - start)*1000/ticks, getpid(),"TESTE");
 
     fclose(regists_file);
 
-	printf("fim processo %d \n", getpid());
 	return 0;
 }
