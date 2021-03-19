@@ -319,7 +319,7 @@ int GetNewPermissions(int form_perm, char *new_mode)
           else {
             if(new_mode[0]=='u'){
               new_perm = form_perm & 63;
-              new_perm = form_perm | new_mask;
+              new_perm = new_perm | new_mask;
             }
             if(new_mode[0]=='g'){
               new_perm = form_perm & 455;
@@ -329,7 +329,7 @@ int GetNewPermissions(int form_perm, char *new_mode)
             }
             if(new_mode[0]=='x'){
               new_perm = form_perm & 504;
-              new_perm = form_perm | new_mask;
+              new_perm = new_perm| new_mask;
             }
           }  
       		break;
