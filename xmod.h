@@ -34,11 +34,11 @@ FILE* GetRegistsFile();
 
 void InitializeArguments(int argc, char *argv[], struct Arguments *args);
 
-int GetFilePermissions(const char *path_name);//Returns the Permissions that the file path_name has 
+int GetFilePermissions(const char *path_name);//Returns the original Permissions that the file path_name has 
 
-int GetNewPermMask(char *new_mode);//
+int GetNewPermMask(char *new_mode);//Transform mode into a mask 
 
-int GetNewPermissions(int form_perm, char *new_mode);//Determines new permission according to the mode and returns it 
+int GetNewPermissions(int form_perm, char *new_mode);//Determines new permission according to the mode and new mask and returns it 
 
 void oct_to_mode(int octal, char *mode);//Converts From Octal Mode To Mode
 

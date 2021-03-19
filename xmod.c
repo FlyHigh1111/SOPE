@@ -457,6 +457,8 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 		{
 			ChangePermissions(args, path_);
 			char *newargv[argc+1];
+      for (int i=0;i<argc+1;i++)
+        newargv[i]=(char*)malloc(256);
 			newargv[0] = "./xmod.o";
 			for (size_t i = 1; i <= argc-3; i++)
 			{
