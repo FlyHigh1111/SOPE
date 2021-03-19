@@ -498,12 +498,30 @@ static void signal_func(int signo){
  hanlder_flag = true;
 }*/
 static void signal_func(int signo){
-  
-switch (signo)
-{
-  case SIGINT:
 
-    //Stops the actual process
+  char *buffer = NULL;
+  size_t n;
+  
+    
+    if(getpid() == getpgid(getpid())){
+      while(1){
+          printf("Exit or continue program? (E/C)");
+          getline(&buffer,&n,stdin);
+          if(strncasecmp(buffer, "E", 1)==0){
+            raise(SIGUSR1);
+            break;
+          }
+          else if(strncasecmp(buffer, "C", 1)==0){
+            raise(SIGCONT);
+            break;
+          }
+      }
+    }
+    else{
+      raise(SIGSTOP);
+    }
+    
+    /*//Stops the actual process
     WriteLog(GetRegistsFile(),0.0,getpid(),"Signal SIGINIT received.");
     kill(0, SIGTSTP);
 
@@ -539,10 +557,11 @@ switch (signo)
     else if(answer == 0){
       //WriteLog(GetRegistsFile,0,getpid(),"Signal CONT sent.");
       kill(0, SIGCONT);
-    }
-    break;
+    }*/
 
-  case SIGUSR1:
+    //--------------------------------------------------------------------
+
+  /*case SIGUSR1:
 
     WriteLog(GetRegistsFile(),0.0,getpid(),"SIGNAL SIGUSR1 received!");
     break;
@@ -551,55 +570,14 @@ switch (signo)
 
     WriteLog(GetRegistsFile(), 0.0, getpid(), "SIGNAL SIGCONT received!");
     break;
+    */
 
-
-  default:
-    break;
-  }
 }
   
 
 static void exit_handler(int signo){
-  exit(0);
+  raise(SIGKILL);
 }
-
-//writes info about signal and process it
-/*bool WriteSignalInfo(bool handler_flag, const struct Arguments *args){
-
-  char *buffer = NULL;
-  size_t n;
-  int answer = 0;
-
-  if(hanlder_flag == true){
-    fprintf(stdout, "\n%d ;\t%s ;\t %d\t\n", getpid(), args->path_name, nfmod); //do nº de ficheiros encontrados e o nº de ficheiros modificados
-    do{
-      fprintf(stdout,"Exit or continue program? (E/C)");
-      getline(&buffer, &n, stdin);
-      if(strncasecmp(buffer,"E",1)==0){
-        answer = 1;
-        break;
-      }
-      else if(strncasecmp(buffer,"C",1)==0){
-        answer = 0;
-        break;
-      }
-    }while(1);
-
-    free(buffer);
-
-    if(answer == 1){
-      exit(0);
-    }
-    else{
-      return true;
-    }
-
-  }
-  else{
-    return false;
-  }
-
-}*/
 
 int main(int argc, char *argv[], char *envp[])  
 {
@@ -608,9 +586,6 @@ int main(int argc, char *argv[], char *envp[])
     struct tms t;
     long ticks;
     struct sigaction sig;
-    struct sigaction usr1;
-    struct sigaction tstp;
-    struct sigaction cont;
 
     sig.sa_handler = signal_func;
     sig.sa_flags = 0;
@@ -622,21 +597,9 @@ int main(int argc, char *argv[], char *envp[])
     //check if CTRL + C was pressed
     sigaction(SIGINT,&sig, NULL);
 
-    usr1.sa_handler = exit_handler;
-    usr1.sa_flags = 0;
-    sigemptyset(&(usr1.sa_mask));
-    sigaction(SIGUSR1, &usr1, NULL);
-
-    tstp.sa_handler = SIG_IGN;
-    tstp.sa_flags = 0;
-    sigemptyset(&(tstp.sa_mask));
-    sigaction(SIGTSTP, &tstp, NULL);
-
-
-    cont.sa_handler = SIG_IGN;
-    cont.sa_flags = 0;
-    sigemptyset(&(cont.sa_mask));
-    sigaction(SIGCONT, &cont, NULL);
+    signal(SIGSTOP,SIG_DFL);
+    signal(SIGUSR1,exit_handler);
+    signal(SIGCONT, SIG_DFL);
 
 
     //starts counting time
