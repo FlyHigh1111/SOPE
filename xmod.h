@@ -27,19 +27,19 @@ struct Arguments
 
 static void signal_func(int);
 
-void PrintError(int error);
+void PrintError(int error);//Prints Every Error Possible
 
 FILE* GetRegistsFile();
 
 void InitializeArguments(int argc, char *argv[], struct Arguments *args);
 
-int GetFilePermissions(const char *path_name);
+int GetFilePermissions(const char *path_name);//Returns the Permissions that the file path_name has 
 
-int GetNewPermMask(char *new_mode);
+int GetNewPermMask(char *new_mode);//
 
-int GetNewPermissions(int form_perm, char *new_mode);
+int GetNewPermissions(int form_perm, char *new_mode);//Determines new permission according to the mode and returns it 
 
-void oct_to_mode(int octal, char *mode);
+void oct_to_mode(int octal, char *mode);//Converts From Octal Mode To Mode
 
 void ChangePermissions(const struct Arguments *args, char *path);
 
