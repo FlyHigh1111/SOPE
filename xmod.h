@@ -33,6 +33,8 @@ struct Arguments
 struct Arguments args; //!< Arguments struct
 int nfmod = 0; //!< number of files already modified at the moment
 int nftot = 0; //!< number of files founded at the moment
+struct timeval start, end;
+struct timeval curr_time; 
 
 /**
  * @brief Prints a mini-manual when the user types "./xmod.o --help"
@@ -61,9 +63,10 @@ FILE* GetRegistsFile();
  * @param regists_file: the regists file descriptor to where it writes the information 
  * @param time: time passed since the beginning of the program
  * @param pid: process' id 
- * @param info: event occurred
+ * @param event: event occurred
+ * @param info: info about event
  */
-void WriteLog(FILE *regists_file, double time, int pid, char info[]);
+void WriteLog(FILE *regists_file, double time, int pid, char event[], char info[]);
 
 /**
  * @brief Initializes the Arguments structure

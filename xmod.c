@@ -1,6 +1,12 @@
 #include "./xmod.h"
 
 
+int diff_ms(struct timeval t2, struct timeval t1  )
+{
+    return (((t1.tv_sec - t2.tv_sec) * 1000000) + 
+            (t1.tv_usec - t2.tv_usec))/1000;
+}
+
 void PrintManual()
 {
 	fprintf(stdout, "Usage: ./xmod.o [OPTIONS] MODE FILE/DIR\n");
@@ -100,9 +106,9 @@ FILE* GetRegistsFile()
     return file;    
 }
 
-void WriteLog(FILE *regists_file, double time, int pid, char info[])
+void WriteLog(FILE *regists_file, double time, int pid, char event[], char info[])
 {
-    fprintf(regists_file,"%4.2f ms ;  %d\t ; %s\t ; \n", time, getpid(), info);
+    fprintf(regists_file,"%4.2f ms ;  %d\t ; %s\t ; %s \n", time, getpid(), event, info);
 }
 
 void InitializeArguments(int argc, char *argv[], struct Arguments *args)
@@ -412,6 +418,7 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 
 			argv[argc-1] = path_;
 			
+      gettimeofday(&curr_time, NULL);
 			pid_t child_pid = fork();
 			int status;
 			if (child_pid == 0)
@@ -422,6 +429,7 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 			}
 			else
 			{
+        WriteLog(GetRegistsFile(),diff_ms(start,curr_time),getpid(),"PROC_CREATE", argv[0]);
 				while(wait(&status)>0) ; //makes the parent waits for his child to finish
 			}
 		}
@@ -435,38 +443,45 @@ static void SignalFunc(int signo)
   char *buffer = NULL;
   size_t n;
   
-    if(getpid() == getpgid(getpid()))
-	{
-		fprintf(stdout,"%d ; %s ; %d ; %d\n",getpid(), args.path_name, nftot, nfmod);
-    	while(1)
-		{
-          	sleep(5);
-          	printf("Exit or continue program? (E/C)");
-          	getline(&buffer,&n,stdin);
-          	if(strncasecmp(buffer, "E", 1) == 0)
-		  	{
-            	raise(SIGUSR1);
-            	break;
-          	}
-			else if(strncasecmp(buffer, "C", 1)==0)
-			{
-            	raise(SIGCONT);
-            	break;
-          	}
-      	}
-    }
-	else
-	{
-      fprintf(stdout,"\n%d ; %s ; %d ; %d\n",getpid(),args.path_name, nftot, nfmod);
-      raise(SIGSTOP);
-    }
+    gettimeofday(curr_time,start);
+    WriteLog(GetRegistsFile(),diff_ms(curr_time,start),getpid(), "SIGNAL_RECV", strsignal(SIGINT));
+      if(getpid() == getpgid(getpid()))
+    {
+      fprintf(stdout,"%d ; %s ; %d ; %d\n",getpid(), args.path_name, nftot, nfmod);
+        while(1)
+      {
+              sleep(5);
+              printf("Exit or continue program? (E/C)");
+              getline(&buffer,&n,stdin);
+              if(strncasecmp(buffer, "E", 1) == 0)
+          {
+                gettimeofday(&curr_time,NULL);
+                WriteLog(GetRegistsFile(),diff_ms(curr_time,start), getpid(), "SIGNAL_SENT",strsignal(SIGUSR1));
+                raise(SIGUSR1);
+                break;
+              }
+        else if(strncasecmp(buffer, "C", 1)==0)
+        {
+                gettimeofday(&curr_time,NULL);
+                WriteLog(GetRegistsFile(),diff_ms(curr_time,start),getpid(), "SIGNAL_SENT", strsignal(SIGCONT));
+                raise(SIGCONT);
+                break;
+              }
+          }
+      }
+    else
+    {
+        fprintf(stdout,"\n%d ; %s ; %d ; %d\n",getpid(),args.path_name, nftot, nfmod);
+        gettimeofday(&curr_time, NULL);
+        WriteLog(GetRegistsFile(), diff_ms(curr_time, start), getpid(), "SIGNAL_SENT", strsignal(SIGSTOP));
+        raise(SIGSTOP);
+      }
 }
   
 int main(int argc, char *argv[], char *envp[])  
 {
-    clock_t start, end;
-    struct tms t;
-    int64_t ticks;
+    //start counting time
+    gettimeofday(&start, NULL);
     struct sigaction sig;
 
     sig.sa_handler = SignalFunc;
@@ -484,11 +499,6 @@ int main(int argc, char *argv[], char *envp[])
     signal(SIGUSR1,ExitHandler);
     signal(SIGCONT, SIG_DFL);
 
-
-    //starts counting time
-    start = times(&t);
-    ticks = sysconf(_SC_CLK_TCK);
-
     InitializeArguments(argc, argv, &args);
 
 	if(!args.option_R)
@@ -503,11 +513,8 @@ int main(int argc, char *argv[], char *envp[])
     //file with regists
     FILE* regists_file = GetRegistsFile();
 
-    ticks = ticks;
-    end = times(&t);
-
-    //puts informations on the regists file
-    WriteLog(regists_file,(double)(end - start)*1000/ticks, getpid(),"TESTE");
+    gettimeofday(&end,NULL);
+    WriteLog(GetRegistsFile(),diff_ms(end,start),getpid(),"PROC_EXIT", "0");
 
     fclose(regists_file);
 
