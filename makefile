@@ -1,8 +1,7 @@
-EXEC = xmod
 objects = xmod.o 
-all: $(EXEC) 
-xmod: xmod.h xmod.c 
-	cc -Wall -o xmod xmod.c
+all: $(objects) 
+xmod.o: xmod.h xmod.c 
+	cc -Wall -o xmod.o xmod.c
 .PHONY: clean
 clean:
 	rm $(objects)
