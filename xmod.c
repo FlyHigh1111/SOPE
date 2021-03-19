@@ -1,10 +1,10 @@
 #include "./xmod.h"
 
-bool hanlder_flag = false;
+/*bool hanlder_flag = false;
 static int nfmod = 0;
 static int nftot = 0;
 
-static void signal_func(int);
+static void signal_func(int);*/
 
 void PrintManual()
 {
@@ -46,7 +46,7 @@ void PrintError(int error)
 			fprintf(stderr, "unable to set file permissions");
 			perror("");
 			break;
-		default:
+		case 9:
         {
 			switch (errno)
 			{
@@ -86,7 +86,8 @@ void PrintError(int error)
       			default:
         			fprintf(stderr, "an error ocurred.\n");
       				break;
-    		}  
+    		} 
+			break; 
 
 		}
 
@@ -371,7 +372,8 @@ void oct_to_mode(int octal, char *mode)
 }
 
 
-void ChangePermissions(const struct Arguments *args, char *path){
+void ChangePermissions(const struct Arguments *args, char *path)
+{
 	int actual_perm = GetFilePermissions(path);
     int new_perm;
     if (args->mode_is_octal == true)
@@ -383,13 +385,13 @@ void ChangePermissions(const struct Arguments *args, char *path){
     //changes the permissions
     int c = chmod(path, new_perm);
     if(c == -1)
-		PrintError(8);
+		PrintError(9);
     //-v or -c implementation
-    char mode[10];
+    char mode[10] = "";
     if (actual_perm == new_perm && args->option_v) {   
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", path, new_perm, mode);
-        nftot++;
+        //nftot++;
     }
     else if (actual_perm != new_perm && (args->option_c || args->option_v)) 
 	{
@@ -397,20 +399,25 @@ void ChangePermissions(const struct Arguments *args, char *path){
         fprintf(stdout, "mode of '%s' changed from 0%o (%s) ", path, actual_perm, mode);
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "to 0%o (%s)\n", new_perm, mode);
-        nftot++;
-        nfmod++;
+        //nftot++;
+        //nfmod++;
     }
 	return;
 
 }
 
-static void exit_child(int signo){
+/*static void exit_child(int signo)
+{
   raise(SIGKILL);
-}
+}*/
 
 void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Arguments *args)
 {
 	DIR *dir = opendir(args->path_name); //opens directory
+	if(dir == NULL)
+	{
+		PrintError(9);
+	}
 	struct dirent *file;
 
 	while ((file = readdir(dir)) != NULL)
@@ -453,8 +460,8 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 			int status;
 			if (child_pid == 0)
 			{
-        struct sigaction int_ign_action;
-        int_ign_action.sa_handler = SIG_IGN;
+        		/*struct sigaction int_ign_action;
+        		int_ign_action.sa_handler = SIG_IGN;
         int_ign_action.sa_flags = 0;
         sigemptyset(&(int_ign_action.sa_mask));
         sigaction(SIGINT, &int_ign_action, NULL);
@@ -475,7 +482,7 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
         cont_action.sa_handler = SIG_DFL;
         cont_action.sa_flags = 0;
         sigemptyset(&(cont_action.sa_mask));
-        sigaction(SIGCONT, &cont_action, NULL); 
+        sigaction(SIGCONT, &cont_action, NULL); */
 
 
 				if(execve("./xmod.o", newargv, envp) == -1)
@@ -493,10 +500,7 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 }
 
 /*signal handler;
-static void signal_func(int signo){
 
- hanlder_flag = true;
-}*/
 static void signal_func(int signo){
 
   char *buffer = NULL;
@@ -521,7 +525,7 @@ static void signal_func(int signo){
       raise(SIGSTOP);
     }
     
-    /*//Stops the actual process
+    ///Stops the actual process
     WriteLog(GetRegistsFile(),0.0,getpid(),"Signal SIGINIT received.");
     kill(0, SIGTSTP);
 
@@ -557,11 +561,11 @@ static void signal_func(int signo){
     else if(answer == 0){
       //WriteLog(GetRegistsFile,0,getpid(),"Signal CONT sent.");
       kill(0, SIGCONT);
-    }*/
+    }
 
     //--------------------------------------------------------------------
 
-  /*case SIGUSR1:
+  case SIGUSR1:
 
     WriteLog(GetRegistsFile(),0.0,getpid(),"SIGNAL SIGUSR1 received!");
     break;
@@ -570,14 +574,13 @@ static void signal_func(int signo){
 
     WriteLog(GetRegistsFile(), 0.0, getpid(), "SIGNAL SIGCONT received!");
     break;
-    */
 
 }
   
 
 static void exit_handler(int signo){
   raise(SIGKILL);
-}
+}*/
 
 int main(int argc, char *argv[], char *envp[])  
 {
@@ -585,7 +588,7 @@ int main(int argc, char *argv[], char *envp[])
     clock_t start, end;
     struct tms t;
     long ticks;
-    struct sigaction sig;
+    /*struct sigaction sig;
 
     sig.sa_handler = signal_func;
     sig.sa_flags = 0;
@@ -599,7 +602,7 @@ int main(int argc, char *argv[], char *envp[])
 
     signal(SIGSTOP,SIG_DFL);
     signal(SIGUSR1,exit_handler);
-    signal(SIGCONT, SIG_DFL);
+    signal(SIGCONT, SIG_DFL);*/
 
 
     //starts counting time
@@ -607,15 +610,16 @@ int main(int argc, char *argv[], char *envp[])
     ticks = sysconf(_SC_CLK_TCK);
 
     InitializeArguments(argc, argv, &args);
-	if(!args.option_R)
+
+	if(args.option_R == false)
 	{
 		ChangePermissions(&args, args.path_name);
   	}
-	else 
-	{
+	if(args.option_R == true)
 		ProcessRecursive(argc, argv, envp, &args);
-	}
-    sleep(10);
+	
+	
+    //sleep(2);
     //infinte cicle to check CTRL + C signal
    /*for( ; ;){
       if(WriteSignalInfo(hanlder_flag, &args)){
@@ -635,6 +639,6 @@ int main(int argc, char *argv[], char *envp[])
 
     fclose(regists_file);
 
-	printf("fim processo \n");
+	printf("fim processo %d \n", getpid());
 	return 0;
 }
