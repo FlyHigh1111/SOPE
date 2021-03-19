@@ -26,6 +26,7 @@ void PrintError(int error)
 			fprintf(stderr, "missing operand");
 			break;
 		case 2:
+			fprintf(stderr, "invalid character");
 			break;
 		case 3:
 			break;
@@ -380,7 +381,7 @@ void ChangePermissions(const struct Arguments *args, char *path){
     if(c == -1)
 		PrintError(8);
     //-v or -c implementation
-    char mode[10] = "";
+    char mode[10];
     if (actual_perm == new_perm && args->option_v) {   
         oct_to_mode(new_perm, mode);
         fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", path, new_perm, mode);
@@ -470,10 +471,12 @@ static void signal_func(int signo){
   char *buffer = NULL;
   size_t n;
   int answer = 0;
-  while(1){
+  while(1)
+  {
     printf("Exit or continue program? (E/C)");
     getline(&buffer,&n,stdin);
-    if(strncasecmp(buffer, "E", 1)==0){
+    if(strncasecmp(buffer, "E", 1)==0)
+	{
       answer = 1;
       break;
     }
@@ -481,6 +484,10 @@ static void signal_func(int signo){
       answer = 0;
       break;
     }
+	else
+	{
+		PrintError(2);
+	}
   }
   free(buffer);
 
@@ -589,7 +596,10 @@ int main(int argc, char *argv[], char *envp[])
 	{
 		ChangePermissions(&args, args.path_name);
   	}
-	ProcessRecursive(argc, argv, envp, &args);
+	else 
+	{
+		ProcessRecursive(argc, argv, envp, &args);
+	}
     sleep(10);
     //infinte cicle to check CTRL + C signal
    /*for( ; ;){
