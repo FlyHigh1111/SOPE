@@ -478,31 +478,35 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 			
 			pid_t child_pid = fork();
 			int status;
-			if (child_pid == 0)
+			if (child_pid == -1)
+			{
+				perror("fork");
+			}
+			else if (child_pid == 0)
 			{
         		/*struct sigaction int_ign_action;
         		int_ign_action.sa_handler = SIG_IGN;
-        int_ign_action.sa_flags = 0;
-        sigemptyset(&(int_ign_action.sa_mask));
-        sigaction(SIGINT, &int_ign_action, NULL);
+        		int_ign_action.sa_flags = 0;
+        		sigemptyset(&(int_ign_action.sa_mask));
+        		sigaction(SIGINT, &int_ign_action, NULL);
 
-        struct sigaction usr1_child;
-        usr1_child.sa_handler = exit_child;
-        usr1_child.sa_flags = 0;
-        sigemptyset(&(usr1_child.sa_mask));
-        sigaction(SIGUSR1, &usr1_child, NULL);
-
-        struct sigaction tstp_action;
-        tstp_action.sa_handler = SIG_DFL;
-        tstp_action.sa_flags = 0;
-        sigemptyset(&(tstp_action.sa_mask));
-        sigaction(SIGTSTP, &tstp_action, NULL);
-
-        struct sigaction cont_action;
-        cont_action.sa_handler = SIG_DFL;
-        cont_action.sa_flags = 0;
-        sigemptyset(&(cont_action.sa_mask));
-        sigaction(SIGCONT, &cont_action, NULL); */
+        		struct sigaction usr1_child;
+        		usr1_child.sa_handler = exit_child;
+        		usr1_child.sa_flags = 0;
+        		sigemptyset(&(usr1_child.sa_mask));
+        		sigaction(SIGUSR1, &usr1_child, NULL);
+		
+        		struct sigaction tstp_action;
+        		tstp_action.sa_handler = SIG_DFL;
+        		tstp_action.sa_flags = 0;
+        		sigemptyset(&(tstp_action.sa_mask));
+        		sigaction(SIGTSTP, &tstp_action, NULL);
+		
+        		struct sigaction cont_action;
+        		cont_action.sa_handler = SIG_DFL;
+        		cont_action.sa_flags = 0;
+        		sigemptyset(&(cont_action.sa_mask));
+        		sigaction(SIGCONT, &cont_action, NULL); */
 
 
 				if(execve("./xmod.o", newargv, envp) == -1)
