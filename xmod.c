@@ -314,7 +314,24 @@ int GetNewPermissions(int form_perm, char *new_mode)
         	new_perm = form_perm & ~new_mask;
       		break;
     	case '=':
-        	new_perm = new_mask;
+          if(new_mode[0]=='a')
+        	  new_perm = new_mask;
+          else {
+            if(new_mode[0]=='u'){
+              new_perm = form_perm & 63;
+              new_perm = form_perm | new_mask;
+            }
+            if(new_mode[0]=='g'){
+              new_perm = form_perm & 455;
+              
+              new_perm = new_perm | new_mask;
+             
+            }
+            if(new_mode[0]=='x'){
+              new_perm = form_perm & 504;
+              new_perm = form_perm | new_mask;
+            }
+          }  
       		break;
     	default:
 			PrintError(7);
