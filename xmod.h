@@ -47,3 +47,6 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 
 bool WriteSignalInfo(bool handler_flag, const struct Arguments *args);
 
+void Initialize_child_handler();
+
+void Initialize_main_handler();
