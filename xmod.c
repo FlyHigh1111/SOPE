@@ -1,10 +1,5 @@
 #include "./xmod.h"
 
-struct Arguments args;
-int nfmod = 0;
-int nftot = 0;
-
-static void SignalFunc(int);
 
 void PrintManual()
 {
@@ -44,10 +39,6 @@ void PrintError(int error)
 			fprintf(stderr, "unable to get file permissions");
 			break;
 		case 8:
-			fprintf(stderr, "unable to set file permissions");
-			perror("");
-			break;
-		default:
         {
 			switch (errno)
 			{
@@ -109,7 +100,8 @@ FILE* GetRegistsFile()
     return file;    
 }
 
-void WriteLog(FILE *regists_file, double time, int pid, char info[]){
+void WriteLog(FILE *regists_file, double time, int pid, char info[])
+{
     fprintf(regists_file,"%4.2f ms ;  %d\t ; %s\t ; \n", time, getpid(), info);
 }
 
@@ -372,7 +364,7 @@ void ChangePermissions(const struct Arguments *args, char *path)
 		PrintError(8);
 
     //-v or -c implementation
-    char mode[10];
+    char mode[10] = "";
     if (actual_perm == new_perm && args->option_v) {   
         OctalToMode(new_perm, mode);
         fprintf(stdout, "mode of '%s' retained as 0%o (%s)\n", path, new_perm, mode);
