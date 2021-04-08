@@ -133,7 +133,7 @@ static void ExitHandler(int signo);
  * @param envp: array of chars with all the system enviroment variables
  * @param args: Arguments structure
  */
-void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Arguments *args);
+void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Arguments *args, FILE *regists_file, struct timeval start, struct timeval curr_time);
 
 /**
  * @brief Signal handler

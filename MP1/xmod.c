@@ -3,8 +3,8 @@
 
 int diff_ms(struct timeval t2, struct timeval t1  )
 {
-    return (((t1.tv_sec - t2.tv_sec) * 1000000) + 
-            (t1.tv_usec - t2.tv_usec))/1000;
+    return (((t2.tv_sec - t1.tv_sec) * 1000000) + 
+            (t2.tv_usec - t1.tv_usec))/1000;
 }
 
 void PrintManual()
@@ -102,7 +102,15 @@ FILE* GetRegistsFile()
     if(s == NULL)
 		PrintError(6);
 
-    FILE* file = fopen(s, "w+");
+    FILE* file;
+	if(getpgid(getpid()))
+	{
+		file = fopen(s, "w+");
+	}
+	else
+	{
+		file = fopen(s, "a+");
+	}
     return file;    
 }
 
@@ -411,7 +419,7 @@ static void ExitHandler(int signo)
   raise(SIGKILL);
 }
 
-void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Arguments *args)
+void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Arguments *args, FILE *regists_file, struct timeval start, struct timeval curr_time)
 {
 	DIR *dir = opendir(args->path_name); //opens directory
 	struct dirent *file;
@@ -435,18 +443,17 @@ void ProcessRecursive(int argc, char *argv[], char *envp[], const struct Argumen
 
 			argv[argc-1] = path_;
 			
-      gettimeofday(&curr_time, NULL);
 			pid_t child_pid = fork();
 			int status;
 			if (child_pid == 0)
 			{
+				WriteLog(regists_file, diff_ms(start,curr_time), getpid(), "PROC_CREATE", argv[0]);
 				if(execve("./xmod.o", argv, envp) == -1)
 					perror("execve");
 				return;
 			}
 			else
 			{
-        WriteLog(GetRegistsFile(),diff_ms(start,curr_time),getpid(),"PROC_CREATE", argv[0]);
 				while(wait(&status)>0) ; //makes the parent waits for his child to finish
 			}
 		}
@@ -499,6 +506,7 @@ int main(int argc, char *argv[], char *envp[])
 {
     //start counting time
     gettimeofday(&start, NULL);
+	gettimeofday(&curr_time, NULL);
     struct sigaction sig;
 
     sig.sa_handler = SignalFunc;
@@ -518,20 +526,20 @@ int main(int argc, char *argv[], char *envp[])
 
     InitializeArguments(argc, argv, &args);
 
+	//file with regists
+    FILE* regists_file = GetRegistsFile();
+
 	if(!args.option_R)
 	{
 		ChangePermissions(&args, args.path_name);
   	}
 	else 
 	{
-		ProcessRecursive(argc, argv, envp, &args);
+		ProcessRecursive(argc, argv, envp, &args, regists_file, start, curr_time);
 	}
 
-    //file with regists
-    FILE* regists_file = GetRegistsFile();
-
     gettimeofday(&end,NULL);
-    WriteLog(GetRegistsFile(),diff_ms(end,start),getpid(),"PROC_EXIT", "0");
+    WriteLog(regists_file,diff_ms(end,start),getpid(),"PROC_EXIT", "0");
 
     fclose(regists_file);
 
