@@ -1,23 +1,71 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <time.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
-void PrintOperation(char* oper)
+#define BUFSIZE 1024
+
+struct Arguments
 {
-    // estrutura: inst ; i ; t ; pid ; tid ; res ; oper
-    // sempre que ocorrer um oper chamar a função PrintOperation
-    time_t seconds;
-    seconds = time(NULL);
-    fprintf(stdout, "%ld ; i ; t ; pid ; tid ; res ; %s \n", seconds, oper);
+    size_t nsecs; // number of seconds
+    char *public_fifo;
+};
 
+int errno;
+
+void *Request(void *arg)
+{
+    fprintf(stdout, "ola\n");
+    pthread_exit(NULL);
 }
+
+void ParseArguments(int argc, char *argv[], struct Arguments *args)
+{
+    if(argc < 4 || strcmp(argv[0], "./c") || strcmp(argv[1], "-t"))
+    {
+        fprintf(stderr, "Usage: c <-t nsecs> fifoname\n");
+        exit(1);
+    } 
+    if(argv[2] < 0) 
+    {
+        fprintf(stderr, "Number of seconds should be positive!\n");
+        exit(1);
+    } 
+
+    args->nsecs = atoi(argv[2]);
+    args->public_fifo = argv[3];
+}
+
 int main(int argc, char *argv[], char *envp[])
 {
-    fprintf(stdout, "Usage: c <-t nsecs> fifoname\n");
+    struct Arguments args;
+    ParseArguments(argc, argv, &args);
+    
+    size_t i = 1;
 
-    int nsecs = atoi(argv[2]);
-    char* fifoname = argv[3];
+    time_t inst;
+    inst = time(NULL);
 
-    PrintOperation("teste");
- 
+    for (time_t ns = inst; ns < inst + args.nsecs; ns++)
+    {
+        pthread_t tid;
+        if(pthread_create(&tid, NULL, Request, NULL) != 0)
+        {
+            fprintf(stderr, "Error: %d\n", errno);
+        }
+        pthread_join(tid, NULL);
+    
+        // estrutura: inst ; i ; t ; pid ; tid ; res ; oper
+        fprintf(stdout, "inst = %ld ; i = %ld ; t ; pid C = %d ; tid = %ld ; res ; oper = IWANT \n", ns, i, getpid(), tid);
+
+        i++;
+    }
+     
     return 0;
 }
