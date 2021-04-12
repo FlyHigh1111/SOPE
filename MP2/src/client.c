@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 
 #define BUFSIZE 1024
+#define CLIENTRES -1
 
 
 pthread_mutex_t lock;
@@ -20,9 +21,19 @@ struct Arguments
     char *public_fifo;
 };
 
+struct Request {
+    int fd; //public FIFO identifier
+    int i;
+    int t;
+    pid_t pid;
+    pthread_t tid;
+    int res;
+    char *oper;
+};
+
 int errno;
 
-void *Request(void *arg)
+void *Test(void *arg)
 {
     fprintf(stdout, "ola\n");
     pthread_exit(NULL);
@@ -44,9 +55,12 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
     args->nsecs = atoi(argv[2]);
     args->public_fifo = argv[3];
 }
-void* fthread(){
+void* fthread(void *param){
     int fp;
     char nfifopriv[200];
+    struct Request *aux = (struct Request *) param;
+    aux->tid = pthread_self();
+
     //cria ffifo privado
     pthread_mutex_lock(&lock);
     sprintf(nfifopriv,"/tmp/%d.%ld",getpid(),pthread_self());
@@ -55,6 +69,12 @@ void* fthread(){
     pthread_mutex_unlock(&lock);
     //construir mensagem que vai ser enviado servidor:gerar numero 0-9
     //write mensagem no fifo publico (fd fornecido com argumento da funçao)
+    int fd = write(aux->fd, "%d ; %d ; %d ; %d ; %d ; %s", sizeof(aux));
+
+    if(fd == -1){
+        fprintf(stderr, "Error writing to public FIFO");
+    }
+    
     fp=open(nfifopriv,O_NONBLOCK,O_WRONLY);//futuro tirar nonblock
     printf("p:%d tid:%ld \n",fp,pthread_self());
     //read resposta do servidor 
@@ -64,20 +84,26 @@ void* fthread(){
     
 }
 
+
+void WriteLog(struct Request request){
+    fprintf(stdout, "%d ; %d ; %d ; %d ; %d ; %s", request.i, request.t, request.pid, request.tid, request.res, request.oper);
+}
+
+
+int RandomInt(){
+    return rand() % 10;
+}
+
+
 int main(int argc, char *argv[], char *envp[])
 {
     struct Arguments args;
-    ParseArguments(argc, argv, &args);
-    int fd = mkfifo(args.public_fifo, S_IWUSR | S_IWOTH | S_IWGRP);//sair porque este é o fifo publico cujo ja esta criado e nome é passado por parametro, nao é o cliente a criar o fifo
+    struct Request request;
+    srand(time(NULL));
 
-    if(fd == -1){
-        fprintf(stderr, "Error creating FIFO");
-        return 1;
-    }
-
-    int open_fd = open(args.public_fifo, O_WRONLY);
-
-    if(open_fd == -1){
+    //open public FIFO
+    request.fd = open(args.public_fifo, O_WRONLY);
+    if(request.fd == -1){
         fprintf(stderr, "Error opening FIFO");
         return 1;
     }
@@ -89,16 +115,22 @@ int main(int argc, char *argv[], char *envp[])
 
     for (time_t ns = inst; ns < inst + args.nsecs; ns++)
     {
-        //falta me fazer o que cada thread envia para o FIFO publico
 
         pthread_t tid;
-        if(pthread_create(&tid, NULL, Request, NULL) != 0)
+        request.i = i;
+        request.t = randomInt();
+        request.pid = getpid();
+        request.res = CLIENTRES;
+        request.oper = "Teste";
+        if(pthread_create(&tid, NULL, fthread, &request) != 0)
         {
             fprintf(stderr, "Error: %d\n", errno);
         }
+        request.tid = tid;
         pthread_join(tid, NULL);
     
         // estrutura: inst ; i ; t ; pid ; tid ; res ; oper
+        WriteLog(request);
         fprintf(stdout, "inst = %ld ; i = %ld ; t ; pid C = %d ; tid = %ld ; res ; oper = IWANT \n", ns, i, getpid(), tid);
 
         i++;
@@ -117,7 +149,7 @@ int main(int argc, char *argv[], char *envp[])
     pthread_mutex_destroy(&lock);
     */
      
-     close(open_fd);
+     close(request.fd);
 
     return 0;
 }
