@@ -46,6 +46,19 @@ int main(int argc, char *argv[], char *envp[])
 {
     struct Arguments args;
     ParseArguments(argc, argv, &args);
+    int fd = mkfifo(args.public_fifo, S_IWUSR | S_IWOTH | S_IWGRP);
+
+    if(fd == -1){
+        fprintf(stderr, "Error creating FIFO");
+        return 1;
+    }
+
+    int open_fd = open(args.public_fifo, O_WRONLY);
+
+    if(open_fd == -1){
+        fprintf(stderr, "Error opening FIFO");
+        return 1;
+    }
     
     size_t i = 1;
 
@@ -54,6 +67,8 @@ int main(int argc, char *argv[], char *envp[])
 
     for (time_t ns = inst; ns < inst + args.nsecs; ns++)
     {
+        //falta me fazer o que cada thread envia para o FIFO publico
+
         pthread_t tid;
         if(pthread_create(&tid, NULL, Request, NULL) != 0)
         {
@@ -67,5 +82,7 @@ int main(int argc, char *argv[], char *envp[])
         i++;
     }
      
+     close(open_fd);
+
     return 0;
 }
