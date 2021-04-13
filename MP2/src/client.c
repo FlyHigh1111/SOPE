@@ -81,12 +81,12 @@ void* fthread(void *param){
     //publicar resultado 
     //fechar fifoprivado 
     //eliminar fifoprivado
-    
+    return NULL;
 }
 
 
 void WriteLog(struct Request request){
-    fprintf(stdout, "%d ; %d ; %d ; %d ; %d ; %s", request.i, request.t, request.pid, request.tid, request.res, request.oper);
+    fprintf(stdout, "%d ; %d ; %d ; %ld ; %d ; %s", request.i, request.t, request.pid, request.tid, request.res, request.oper);
 }
 
 
@@ -97,12 +97,15 @@ int RandomInt(){
 
 int main(int argc, char *argv[], char *envp[])
 {
-    struct Arguments args;
+    struct Arguments *args = NULL;
     struct Request request;
     srand(time(NULL));
 
+
+    ParseArguments(argc ,argv, args);
+
     //open public FIFO
-    request.fd = open(args.public_fifo, O_WRONLY);
+    request.fd = open(args->public_fifo, O_WRONLY);
     if(request.fd == -1){
         fprintf(stderr, "Error opening FIFO");
         return 1;
@@ -113,12 +116,12 @@ int main(int argc, char *argv[], char *envp[])
     time_t inst;
     inst = time(NULL);
 
-    for (time_t ns = inst; ns < inst + args.nsecs; ns++)
+    for (time_t ns = inst; ns < inst + args->nsecs; ns++)
     {
 
         pthread_t tid;
         request.i = i;
-        request.t = randomInt();
+        request.t = RandomInt();
         request.pid = getpid();
         request.res = CLIENTRES;
         request.oper = "Teste";
