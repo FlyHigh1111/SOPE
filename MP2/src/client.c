@@ -97,26 +97,25 @@ int RandomInt(){
 
 int main(int argc, char *argv[], char *envp[])
 {
-    struct Arguments *args = NULL;
+    struct Arguments args;
     struct Request request;
     srand(time(NULL));
 
 
-    ParseArguments(argc ,argv, args);
+    ParseArguments(argc ,argv, &args);
 
     //open public FIFO
-    request.fd = open(args->public_fifo, O_WRONLY);
+    request.fd = open(args.public_fifo, O_WRONLY);
     if(request.fd == -1){
         fprintf(stderr, "Error opening FIFO");
         return 1;
     }
     
     size_t i = 1;
-
     time_t inst;
     inst = time(NULL);
 
-    for (time_t ns = inst; ns < inst + args->nsecs; ns++)
+    for (time_t ns = inst; ns < inst + args.nsecs; ns++)
     {
 
         pthread_t tid;
