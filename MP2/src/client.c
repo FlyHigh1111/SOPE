@@ -230,7 +230,7 @@ int main(int argc, char *argv[], char *envp[])
         pthread_join(tid[k],NULL);
     }
      
-     close(request.fd);
+     close(argsth.fPubl);
 
     return 0;
 }
