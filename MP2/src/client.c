@@ -162,9 +162,6 @@ void* thread_handle(void *argumentos){
     pthread_exit(NULL);   
 }
 
-
-
-
 void WriteLog(struct Request request){
     fprintf(stdout, "%d ; %d ; %d ; %ld ; %d ; %s", request.i, request.t, request.pid, request.tid, request.res, request.oper);
 }
@@ -232,19 +229,6 @@ int main(int argc, char *argv[], char *envp[])
     for(int k=0;k<th;k++){
         pthread_join(tid[k],NULL);
     }
-    
-    /*pthread_t id[20];
-
-    pthread_mutex_init(&lock, NULL);
-    for(int i=1;i<=20;i++){
-        pthread_create(&id[i], NULL, fthread, NULL);
-
-    }
-    for(int i=1;i<=20;i++){
-        pthread_join(id[i], NULL);
-    }
-    pthread_mutex_destroy(&lock);
-    */
      
      close(request.fd);
 
