@@ -1,4 +1,5 @@
 #include "client.h"
+#include <pthread.h>
 
 
 void ParseArguments(int argc, char *argv[], struct Arguments *args)
@@ -23,8 +24,6 @@ int Randomize(int lower, int upper)
     return (rand() % (upper - lower + 1)) + lower;
 }
 
-//Handler para o sinal SIGPIPE
-void sigpipeHandler();
 
 void* ThreadHandler(void *arguments)
 {
@@ -93,11 +92,20 @@ void WriteLog(struct Log log)
     fprintf(stdout, "%ld ; %d ; %d ; %d ; %ld ; %d ; %s\n", time(NULL), log.i, log.t, log.pid, log.tid, log.res, log.oper);
 }
 
+void sigPipeHandler(int signum){
+   
+    printf("fifo foi interrompido pelo servidor !");
+    
+    exit(1);
+   
+}
 
 int main(int argc, char *argv[], char *envp[])
 {
     struct Arguments args;
     struct ArgsThread argsth;
+
+    signal(SIGPIPE,sigPipeHandler);
 
     srand(time(NULL));
     cont = 0; //variable updated by each thread
