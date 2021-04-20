@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <signal.h>
 
 #define CLIENTE -1
 #define MAX_THREADS 10000
