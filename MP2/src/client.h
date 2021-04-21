@@ -14,7 +14,8 @@
 #define MAX_THREADS 10000
 #define BUFFER_SIZE 256
 
-pthread_mutex_t lock; //contains the mutex's state (opened ou closes)
+pthread_mutex_t lock1; //contains the mutex's state (opened ou closes)
+pthread_mutex_t lock2;
 int errno;
 int cont; //counter of number of threads created by the main thread.
 

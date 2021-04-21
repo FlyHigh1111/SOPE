@@ -4,7 +4,7 @@
 
 void ParseArguments(int argc, char *argv[], struct Arguments *args)
 {
-    if(argc < 4 || strcmp(argv[0], "./client") || strcmp(argv[1], "-t"))
+    if(argc < 4 || strcmp(argv[0], "./c") || strcmp(argv[1], "-t"))
     {
         fprintf(stderr, "Usage: c <-t nsecs> fifoname\n");
         exit(1);
@@ -37,12 +37,12 @@ void* ThreadHandler(void *arguments)
 
     struct ArgsThread *args= (struct ArgsThread*)arguments;
 
-    pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&lock1);
     cont++;
     i = cont;
-    pthread_mutex_unlock(&lock);  
+    pthread_mutex_unlock(&lock1);  
 
-    //cria fifo privado
+    //creates private fifo
     sprintf(private_fifo, "/tmp/%d.%ld", getpid(), pthread_self());
     mkfifo(private_fifo, 0666);
 
@@ -67,15 +67,18 @@ void* ThreadHandler(void *arguments)
     request_message.pid = args->pid;
     request_message.tid = pthread_self();
 
-    pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&lock2);
     write(args->fd_public_fifo,&request_message,sizeof(struct Message));
-    pthread_mutex_unlock(&lock);
+    pthread_mutex_unlock(&lock2);
 
     //opens private FIFO por reading
     fd_private_fifo = open(private_fifo, O_RDONLY);
 
     //reads server response and blocks while the server does not respond 
     read(fd_private_fifo, &response_message, sizeof(struct Message));
+    //checks server response (get last param in order to check if service  is closed)
+
+    
     log.oper = "GOTRS";
     WriteLog(log);
 
@@ -92,19 +95,13 @@ void WriteLog(struct Log log)
     fprintf(stdout, "%ld ; %d ; %d ; %d ; %ld ; %d ; %s\n", time(NULL), log.i, log.t, log.pid, log.tid, log.res, log.oper);
 }
 
-void sigPipeHandler(int signum){
-   
-    printf("fifo foi interrompido pelo servidor !");
-    exit(1);
-   
-}
 
 int main(int argc, char *argv[], char *envp[])
 {
     struct Arguments args;
     struct ArgsThread argsth;
 
-    signal(SIGPIPE,sigPipeHandler);
+   
 
     srand(time(NULL));
     cont = 0; //variable updated by each thread
