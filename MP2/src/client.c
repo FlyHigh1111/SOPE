@@ -107,13 +107,13 @@ int main(int argc, char *argv[], char *envp[])
     cont = 0; //variable updated by each thread
 
     ParseArguments(argc ,argv, &args);
-    int fd;
+    
     //open public FIFO
     //while(1){
-        fd = open(args.public_fifo, O_WRONLY);
+        int fd = open(args.public_fifo, O_WRONLY);
         if(fd == -1)
         {
-            printf(stderr, "Error opening FIFO");
+            fprintf(stderr, "Error opening FIFO");
             return 1;
 
         }
