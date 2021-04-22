@@ -109,15 +109,15 @@ int main(int argc, char *argv[], char *envp[])
     ParseArguments(argc ,argv, &args);
     int fd;
     //open public FIFO
-    while(1){
+    //while(1){
         fd = open(args.public_fifo, O_WRONLY);
-        if(fd != -1)
+        if(fd == -1)
         {
-            /*fprintf(stderr, "Error opening FIFO");
-            return 1;*/
-            break;
+            printf(stderr, "Error opening FIFO");
+            return 1;
+
         }
-    }
+    
 
     //initializes thread arguments to use in thread_handle function
     argsth.pid = getpid();
