@@ -107,17 +107,16 @@ int main(int argc, char *argv[], char *envp[])
     cont = 0; //variable updated by each thread
 
     ParseArguments(argc ,argv, &args);
-
-    //open public FIFO
-    /*int fd = open(args.public_fifo, O_WRONLY);
-    if(fd == -1)
-    {
-        fprintf(stderr, "Error opening FIFO");
-        return 1;
-    }*/
     int fd;
-    while((fd=open(args.public_fifo, O_WRONLY))==-1){
-        
+    //open public FIFO
+    while(1){
+        fd = open(args.public_fifo, O_WRONLY);
+        if(fd != -1)
+        {
+            /*fprintf(stderr, "Error opening FIFO");
+            return 1;*/
+            break;
+        }
     }
 
     //initializes thread arguments to use in thread_handle function
@@ -130,7 +129,11 @@ int main(int argc, char *argv[], char *envp[])
     time_t inst;
     inst = time(NULL);
     time_t ns = inst;
+    //invoca funçao alarm para despoletar o SIGALRM ao fim nsecs
+    //alarm(args.nsecs);
     while(ns < inst + args.nsecs)
+    
+    //while(1)
     {
         if(pthread_create(&tid[th], NULL, ThreadHandler, &argsth) != 0){
             fprintf(stderr, "Error: %d\n", errno);
