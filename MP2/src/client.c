@@ -107,18 +107,19 @@ int main(int argc, char *argv[], char *envp[])
     cont = 0; //variable updated by each thread
 
     ParseArguments(argc ,argv, &args);
-    
+    int fd;
     //open public FIFO
-    //while(1){
-        int fd = open(args.public_fifo, O_WRONLY);
-        if(fd == -1)
+    while(1){
+         fd = open(args.public_fifo, O_WRONLY);
+        if(fd != -1)
         {
-            fprintf(stderr, "Error opening FIFO");
-            return 1;
+            /*fprintf(stderr, "Error opening FIFO");
+            return 1;*/
+            break;
 
         }
     
-
+    }
     //initializes thread arguments to use in thread_handle function
     argsth.pid = getpid();
     argsth.fd_public_fifo = fd;
