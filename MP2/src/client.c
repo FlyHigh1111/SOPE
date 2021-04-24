@@ -138,8 +138,8 @@ int main(int argc, char *argv[], char *envp[])
     //invoca funçao alarm para despoletar o SIGALRM ao fim nsecs
     //alarm(args.nsecs);
     //while(ns < inst + args.nsecs)
-    nsecs=args.nsecs;
-    alarm(nsecs);
+    //nsecs=args.nsecs;
+    alarm(args.nsecs);
     while(termina==0)
     {
         if(pthread_create(&tid[th], NULL, ThreadHandler, &argsth) != 0){
