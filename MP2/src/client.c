@@ -97,8 +97,6 @@ void WriteLog(struct Log log)
 
 void sigAlrmHandler(){
     termina=1;
-    //alarm(nsecs);
-
 }
 
 int main(int argc, char *argv[], char *envp[])
@@ -136,11 +134,9 @@ int main(int argc, char *argv[], char *envp[])
     inst = time(NULL);
     time_t ns = inst;
     //invoca funçao alarm para despoletar o SIGALRM ao fim nsecs
-    //alarm(args.nsecs);
-    //while(ns < inst + args.nsecs)
-    //nsecs=args.nsecs;
     alarm(args.nsecs);
     while(termina==0)
+     //while(ns < inst + args.nsecs)
     {
         if(pthread_create(&tid[th], NULL, ThreadHandler, &argsth) != 0){
             fprintf(stderr, "Error: %d\n", errno);
