@@ -19,7 +19,8 @@ pthread_mutex_t lock1; //contains the mutex's state (opened ou closes)
 pthread_mutex_t lock2;
 int errno;
 int cont; //counter of number of threads created by the main thread.
-
+int termina=0;
+int nsecs;
 /**
  * @brief Struct with the arguments introduced in the command line.
  */

@@ -95,13 +95,18 @@ void WriteLog(struct Log log)
     fprintf(stdout, "%ld ; %d ; %d ; %d ; %ld ; %d ; %s\n", time(NULL), log.i, log.t, log.pid, log.tid, log.res, log.oper);
 }
 
+void sigAlrmHandler(){
+    termina=1;
+    //alarm(nsecs);
+
+}
 
 int main(int argc, char *argv[], char *envp[])
 {
     struct Arguments args;
     struct ArgsThread argsth;
 
-   
+   signal(SIGALRM,sigAlrmHandler);
 
     srand(time(NULL));
     cont = 0; //variable updated by each thread
@@ -132,9 +137,10 @@ int main(int argc, char *argv[], char *envp[])
     time_t ns = inst;
     //invoca funçao alarm para despoletar o SIGALRM ao fim nsecs
     //alarm(args.nsecs);
-    while(ns < inst + args.nsecs)
-    
-    //while(1)
+    //while(ns < inst + args.nsecs)
+    nsecs=args.nsecs;
+    alarm(nsecs);
+    while(termina==0)
     {
         if(pthread_create(&tid[th], NULL, ThreadHandler, &argsth) != 0){
             fprintf(stderr, "Error: %d\n", errno);
