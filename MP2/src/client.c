@@ -105,6 +105,7 @@ void sigAlrmHandler(){
 
 void sigPipeHandler(){
     printf("Fifo is closed \n \n");
+    raise(SIGKILL);
 }
 
 int main(int argc, char *argv[], char *envp[])
@@ -114,6 +115,7 @@ int main(int argc, char *argv[], char *envp[])
 
    signal(SIGALRM,sigAlrmHandler);
    signal(SIGPIPE, sigPipeHandler);
+
 
     srand(time(NULL));
     cont = 0; //variable updated by each thread
