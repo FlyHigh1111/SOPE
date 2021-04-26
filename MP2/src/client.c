@@ -21,7 +21,7 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
 
 int Randomize(int lower, int upper)
 {
-    return (rand() % (upper - lower + 1)) + lower;
+    return (rand_r( (upper - lower + 1)) + lower);
 }
 
 
