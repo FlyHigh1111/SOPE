@@ -96,7 +96,12 @@ void WriteLog(struct Log log)
 }
 
 void sigAlrmHandler(){
-    termina=1;
+    termina=false;
+    printf("Alarm received\n");
+}
+
+void sigPipeHandler(){
+    printf("Fifo is closed");
 }
 
 int main(int argc, char *argv[], char *envp[])
@@ -105,6 +110,7 @@ int main(int argc, char *argv[], char *envp[])
     struct ArgsThread argsth;
 
    signal(SIGALRM,sigAlrmHandler);
+   signal(SIGPIPE, sigPipeHandler);
 
     srand(time(NULL));
     cont = 0; //variable updated by each thread
@@ -112,16 +118,11 @@ int main(int argc, char *argv[], char *envp[])
     ParseArguments(argc ,argv, &args);
     int fd;
     //open public FIFO
-    while(1){
-         fd = open(args.public_fifo, O_WRONLY);
-        if(fd != -1)
-        {
-            /*fprintf(stderr, "Error opening FIFO");
-            return 1;*/
-            break;
-
-        }
-    
+    fd = open(args.public_fifo, O_WRONLY);
+    if(fd != -1)
+    {
+        fprintf(stderr, "Error opening FIFO");
+        return 1;
     }
     //initializes thread arguments to use in thread_handle function
     argsth.pid = getpid();
@@ -135,7 +136,7 @@ int main(int argc, char *argv[], char *envp[])
     time_t ns = inst;
     //invoca funçao alarm para despoletar o SIGALRM ao fim nsecs
     alarm(args.nsecs);
-    while(termina==0)
+    while(termina)
      //while(ns < inst + args.nsecs)
     {
         if(pthread_create(&tid[th], NULL, ThreadHandler, &argsth) != 0){
@@ -150,7 +151,7 @@ int main(int argc, char *argv[], char *envp[])
         pthread_join(tid[k], NULL);
     }
      
-     close(argsth.fd_public_fifo);
+    close(argsth.fd_public_fifo);
 
     return 0;
 }
