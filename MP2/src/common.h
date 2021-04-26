@@ -1,4 +1,4 @@
-#ifndef _COMMON_H
+/*#ifndef _COMMON_H
 #define _COMMON_H 1
 typedef struct {
 	int rid; 										// request id
@@ -7,4 +7,4 @@ typedef struct {
 	int tskload;									// task load
 	int tskres;										// task result
 } Message;
-#endif // _COMMON_H
+#endif // _COMMON_H*/

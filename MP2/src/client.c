@@ -43,7 +43,8 @@ void* ThreadHandler(void *arguments)
     pthread_mutex_unlock(&lock1);  
 
     //creates private fifo
-    sprintf(private_fifo, "/tmp/%d.%ld", getpid(), pthread_self());
+    //sprintf(private_fifo, "/tmp/%d.%ld", getpid(), pthread_self());
+    snprintf(private_fifo,BUFFER_SIZE, "/tmp/%d.%ld", getpid(), pthread_self());
     mkfifo(private_fifo, 0666);
 
     //generates task load (random number between 1 and 9):
@@ -98,7 +99,7 @@ void WriteLog(struct Log log)
 
 void sigAlrmHandler(){
     termina=false;
-    printf("Alarm received\n");
+    printf("Client time has ended");
 }
 
 void sigPipeHandler(){
