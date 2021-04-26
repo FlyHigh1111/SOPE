@@ -77,9 +77,10 @@ void* ThreadHandler(void *arguments)
     //reads server response and blocks while the server does not respond 
     read(fd_private_fifo, &response_message, sizeof(struct Message));
     //checks server response (get last param in order to check if service  is closed)
-
-    
-    log.oper = "GOTRS";
+    if(response_message.tskres==-1)
+        log.oper="CLOSD";
+    else
+        log.oper = "GOTRS";
     WriteLog(log);
 
 
@@ -124,7 +125,7 @@ int main(int argc, char *argv[], char *envp[])
         {
             //fprintf(stderr, "Error opening FIFO");
             break;
-    }
+        }
     }
     //initializes thread arguments to use in thread_handle function
     argsth.pid = getpid();
