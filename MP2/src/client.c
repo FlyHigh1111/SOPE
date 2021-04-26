@@ -104,7 +104,7 @@ void sigAlrmHandler(){
 }
 
 void sigPipeHandler(){
-    printf("Fifo is closed");
+    printf("Fifo is closed \n \n");
 }
 
 int main(int argc, char *argv[], char *envp[])
