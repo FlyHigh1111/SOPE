@@ -102,7 +102,7 @@ void WriteLog(struct Log log)
 
 void sigAlrmHandler(){
     termina=false;
-    printf("Client time has ended");
+
 }
 
 void sigPipeHandler(){
