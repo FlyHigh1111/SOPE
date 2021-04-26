@@ -1,3 +1,4 @@
+#pragma once
 #ifndef _COMMON_H
 #define _COMMON_H 1
 /*typedef struct {
