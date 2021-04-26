@@ -83,8 +83,10 @@ void* ThreadHandler(void *arguments)
         log.oper="CLOSD";
         termina=false;
     }
-    else
+    else{
+        log.res=response_message.tskres;
         log.oper = "GOTRS";
+    }
     WriteLog(log);
 
 
@@ -119,7 +121,7 @@ int main(int argc, char *argv[], char *envp[])
    signal(SIGPIPE, sigPipeHandler);
 
 
-    srand(time(NULL));
+    //srand(time(NULL));
     cont = 0; //variable updated by each thread
 
     ParseArguments(argc ,argv, &args);
