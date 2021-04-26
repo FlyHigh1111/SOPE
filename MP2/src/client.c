@@ -79,8 +79,10 @@ void* ThreadHandler(void *arguments)
     //reads server response and blocks while the server does not respond 
     read(fd_private_fifo, &response_message, sizeof(struct Message));
     //checks server response (get last param in order to check if service  is closed)
-    if(response_message.tskres==-1)
+    if(response_message.tskres==-1){
         log.oper="CLOSD";
+        termina=false;
+    }
     else
         log.oper = "GOTRS";
     WriteLog(log);
