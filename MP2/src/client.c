@@ -121,7 +121,7 @@ int main(int argc, char *argv[], char *envp[])
    signal(SIGPIPE, sigPipeHandler);
 
 
-    //srand(time(NULL));
+    srand(time(NULL));
     cont = 0; //variable updated by each thread
 
     ParseArguments(argc ,argv, &args);
