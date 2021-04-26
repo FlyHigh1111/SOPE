@@ -106,7 +106,7 @@ void sigAlrmHandler(){
 }
 
 void sigPipeHandler(){
-    printf("Fifo is closed \n \n");
+    //printf("Fifo is closed \n \n");
     raise(SIGKILL);
 }
 
