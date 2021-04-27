@@ -19,9 +19,9 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
     args->public_fifo = argv[3];
 }
 
-int Randomize(int lower, int upper)
+int Randomize(int lower, int upper,int seed)
 {
-    int seed=time(NULL);
+   
     return (rand_r(&seed) % (upper - lower + 1)) + lower;
 }
 
@@ -47,9 +47,9 @@ void* ThreadHandler(void *arguments)
     //sprintf(private_fifo, "/tmp/%d.%ld", getpid(), pthread_self());
     snprintf(private_fifo,BUFFER_SIZE, "/tmp/%d.%ld", getpid(), pthread_self());
     mkfifo(private_fifo, 0666);
-
+    int seed=time(NULL);
     //generates task load (random number between 1 and 9):
-    t = Randomize(1, 9);
+    t = Randomize(1, 9,seed);
 
     //constructs the message/log to print to stdout
     struct Log log;
