@@ -81,7 +81,7 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args);
  * @param upper: upper number
  * @return int: random number created
  */
-int Randomize(int lower, int upper,int seed);
+int Randomize(int lower, int upper,unsigned int seed);
 
 void* ThreadHandler(void *arguments);
 
