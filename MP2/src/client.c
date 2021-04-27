@@ -21,7 +21,7 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
 
 int Randomize(int lower, int upper)
 {
-    int seed=time(NULL);
+    unsigned int seed = (unsigned int) time(NULL);
     return (rand_r(&seed) % (upper - lower + 1)) + lower;
 }
 
@@ -49,7 +49,8 @@ void* ThreadHandler(void *arguments)
     mkfifo(private_fifo, 0666);
 
     //generates task load (random number between 1 and 9):
-    t = Randomize(1, 9);
+    unsigned int seed = (unsigned int) time(NULL);
+    t = rand_r(&seed) % 10;
 
     //constructs the message/log to print to stdout
     struct Log log;
