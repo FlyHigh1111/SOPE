@@ -77,15 +77,12 @@ void* ThreadHandler(void *arguments)
 
     //opens private FIFO por reading
     fd_private_fifo = open(private_fifo, O_RDONLY);
-
-
-    
-
-
-
    
     //reads server response and blocks while the server does not respond 
     read(fd_private_fifo, &response_message, sizeof(struct Message));
+if(!termina){
+    printf(" t:%ld\n",pthread_self);
+    }
     //checks server response (get last param in order to check if service  is closed)
     if(response_message.tskres==-1){
         log.oper="CLOSD";
@@ -160,6 +157,16 @@ int main(int argc, char *argv[], char *envp[])
         //ns = time(NULL);
         th++;
     }
+sleep(3);
+char str[256];
+for(int i=0;i<th;i++){
+    snprintf(str,256,"/tmp/%d.%ld",getpid,tid[i]);
+    remove(str);
+    
+}
+
+
+
     for(int k = 0; k < th; k++)
     {
         pthread_join(tid[k], NULL);
