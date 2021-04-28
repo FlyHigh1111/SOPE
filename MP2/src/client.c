@@ -76,13 +76,8 @@ void* ThreadHandler(void *arguments)
     pthread_mutex_unlock(&lock2);
 
     //opens private FIFO por reading
-    //fd_private_fifo = open(private_fifo, O_RDONLY);
-fd_private_fifo = open(private_fifo,O_NONBLOCK, O_RDONLY);
-int n;
-while((n=read(fd_private_fifo, &response_message, sizeof(struct Message))==0) && termina);
-if(!termina && n==0)
-    log.oper="GAVUP";
-    else{
+    fd_private_fifo = open(private_fifo, O_RDONLY);
+
 
     
 
@@ -90,7 +85,7 @@ if(!termina && n==0)
 
    
     //reads server response and blocks while the server does not respond 
-    //read(fd_private_fifo, &response_message, sizeof(struct Message));
+    read(fd_private_fifo, &response_message, sizeof(struct Message));
     //checks server response (get last param in order to check if service  is closed)
     if(response_message.tskres==-1){
         log.oper="CLOSD";
@@ -100,7 +95,7 @@ if(!termina && n==0)
         log.res=response_message.tskres;
         log.oper = "GOTRS";
     }
-    }
+    
     WriteLog(log);
 
 
