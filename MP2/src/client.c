@@ -78,8 +78,9 @@ void* ThreadHandler(void *arguments)
     //opens private FIFO por reading
     //fd_private_fifo = open(private_fifo, O_RDONLY);
 fd_private_fifo = open(private_fifo,O_NONBLOCK, O_RDONLY);
-while(read(fd_private_fifo, &response_message, sizeof(struct Message))==0 && termina);
-if(!termina)
+int n;
+while((n=read(fd_private_fifo, &response_message, sizeof(struct Message))==0) && termina);
+if(!termina && n==0)
     log.oper="GAVUP";
     else{
 
