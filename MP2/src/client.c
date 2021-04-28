@@ -127,7 +127,7 @@ int main(int argc, char *argv[], char *envp[])
     cont = 0; //variable updated by each thread
 
     ParseArguments(argc ,argv, &args);
-    int fd;
+    int fd = 0;
     //open public FIFO
     while(1){
         fd = open(args.public_fifo, O_WRONLY);
@@ -142,7 +142,7 @@ int main(int argc, char *argv[], char *envp[])
     argsth.fd_public_fifo = fd;
 
     int th = 0; //thread counter
-    pthread_t tid[MAX_THREADS]; //array with thread's tids
+    pthread_t tid[MAX_THREADS] = {0}; //array with thread's tids
   
     //time_t inst;
     //inst = time(NULL);
