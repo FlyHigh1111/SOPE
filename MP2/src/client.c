@@ -142,8 +142,8 @@ int main(int argc, char *argv[], char *envp[])
     int th = 0; //thread counter
     pthread_t tid[MAX_THREADS]; //array with thread's tids
   
-    time_t inst;
-    inst = time(NULL);
+    //time_t inst;
+    //inst = time(NULL);
     //time_t ns = inst;
     //invoca funçao alarm para despoletar o SIGALRM ao fim nsecs
     alarm(args.nsecs);
