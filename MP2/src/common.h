@@ -1,3 +1,6 @@
+#pragma once
+#include <signal.h>
+#include <pthread.h>
 #ifndef _COMMON_H
 #define _COMMON_H 1
 typedef struct {

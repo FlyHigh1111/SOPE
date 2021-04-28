@@ -144,7 +144,7 @@ int main(int argc, char *argv[], char *envp[])
   
     time_t inst;
     inst = time(NULL);
-    time_t ns = inst;
+    //time_t ns = inst;
     //invoca funçao alarm para despoletar o SIGALRM ao fim nsecs
     alarm(args.nsecs);
     while(termina)
@@ -154,7 +154,7 @@ int main(int argc, char *argv[], char *envp[])
             fprintf(stderr, "Error: %d\n", errno);
         }
         usleep(5000); //5ms
-        ns = time(NULL);
+        //ns = time(NULL);
         th++;
     }
     for(int k = 0; k < th; k++)
