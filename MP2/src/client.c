@@ -84,6 +84,7 @@ if(!termina){
     printf(" t:%ld\n",pthread_self());
     log.oper="GAVUP";
     }
+    else{
     //checks server response (get last param in order to check if service  is closed)
     if(response_message.tskres==-1){
         log.oper="CLOSD";
@@ -93,7 +94,7 @@ if(!termina){
         log.res=response_message.tskres;
         log.oper = "GOTRS";
     }
-    
+    }
     WriteLog(log);
 
 
