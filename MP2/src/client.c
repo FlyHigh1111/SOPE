@@ -47,8 +47,8 @@ void* ThreadHandler(void *arguments)
     snprintf(private_fifo,BUFFER_SIZE, "/tmp/%d.%ld", getpid(), pthread_self());
     mkfifo(private_fifo, 0666);
     srand(time(NULL));
-    unsigned int seed = (unsigned) time(NULL);
-    
+    //unsigned int seed = (unsigned) time(NULL);
+    unsigned int seed;
     //generates task load (random number between 1 and 9):
     t = Randomize(1, 9, seed);
 
