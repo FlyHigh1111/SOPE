@@ -81,7 +81,7 @@ void* ThreadHandler(void *arguments)
     //reads server response and blocks while the server does not respond 
     read(fd_private_fifo, &response_message, sizeof(struct Message));
 if(!termina){
-    printf(" t:%ld\n",pthread_self());
+    
     log.oper="GAVUP";
     }
     else{
