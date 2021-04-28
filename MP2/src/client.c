@@ -78,7 +78,15 @@ void* ThreadHandler(void *arguments)
     //opens private FIFO por reading
     //fd_private_fifo = open(private_fifo, O_RDONLY);
 fd_private_fifo = open(private_fifo,O_NONBLOCK, O_RDONLY);
-while(read(fd_private_fifo, &response_message, sizeof(struct Message))==0);
+while(read(fd_private_fifo, &response_message, sizeof(struct Message))==0 && termina);
+if(!termina)
+    log.oper="GAVUP";
+    else{
+
+    
+
+
+
    
     //reads server response and blocks while the server does not respond 
     //read(fd_private_fifo, &response_message, sizeof(struct Message));
@@ -90,6 +98,7 @@ while(read(fd_private_fifo, &response_message, sizeof(struct Message))==0);
     else{
         log.res=response_message.tskres;
         log.oper = "GOTRS";
+    }
     }
     WriteLog(log);
 
