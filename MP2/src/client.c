@@ -169,7 +169,7 @@ int main(int argc, char *argv[], char *envp[])
         //ns = time(NULL);
         th++;
     }
-//usleep(3000);
+usleep(3000);
 /*char str[256];
 for(int i=0;i<th;i++){
     snprintf(str,256,"/tmp/%d.%ld",getpid(),tid[i]);
@@ -179,6 +179,7 @@ for(int i=0;i<th;i++){
 }*/
 for(int i=0;i<cont;i++){
     close(fdt[i]);
+    printf("fdt: %d",fdt[i]);
 }
 
     for(int k = 0; k < th; k++)
