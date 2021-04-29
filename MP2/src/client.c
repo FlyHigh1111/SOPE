@@ -77,14 +77,15 @@ void* ThreadHandler(void *arguments)
 
     //opens private FIFO por reading
     fd_private_fifo = open(private_fifo, O_RDONLY);
-   
+    response_message.tskres=-2;
     //reads server response and blocks while the server does not respond 
     read(fd_private_fifo, &response_message, sizeof(struct Message));
-/*if(!termina){
-    
-    log.oper="GAVUP";
-    }*/
-   
+
+   if(response_message.tskres==-2 && !termina){
+        log.oper="GAVUP";
+        log.res=-1;
+   }
+   else{
     //checks server response (get last param in order to check if service  is closed)
     if(response_message.tskres==-1){
         log.oper="CLOSD";
@@ -94,6 +95,11 @@ void* ThreadHandler(void *arguments)
         log.res=response_message.tskres;
         log.oper = "GOTRS";
     }
+   }
+    /*if(!termina){
+    
+    log.oper="GAVUP";
+    }*/
     
     WriteLog(log);
 
