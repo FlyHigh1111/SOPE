@@ -84,6 +84,7 @@ void* ThreadHandler(void *arguments)
    if(response_message.tskres==-2 && !termina){
         log.oper="GAVUP";
         log.res=-1;
+        printf("t: %ld \n",pthread_self());
    }
    else{
     //checks server response (get last param in order to check if service  is closed)
@@ -165,7 +166,7 @@ int main(int argc, char *argv[], char *envp[])
         //ns = time(NULL);
         th++;
     }
-usleep(10000);
+usleep(500000);
 char str[256];
 for(int i=0;i<th;i++){
     snprintf(str,256,"/tmp/%d.%ld",getpid(),tid[i]);
