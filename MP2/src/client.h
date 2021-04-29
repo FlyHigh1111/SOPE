@@ -21,7 +21,7 @@ pthread_mutex_t lock2;
 int errno;
 int cont; //counter of number of threads created by the main thread.
 bool termina=true;
-
+ int fdt[MAX_THREADS] = {0}; 
 /**
  * @brief Struct with the arguments introduced in the command line.
  */

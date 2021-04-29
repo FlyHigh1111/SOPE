@@ -29,7 +29,8 @@ int Randomize(int lower, int upper, unsigned int seed)
 void* ThreadHandler(void *arguments)
 {
     int i;                  
-    int t;                  
+    int t; 
+    int j;                 
     char private_fifo[BUFFER_SIZE];    //private FIFO name
     int fd_private_fifo;   //private FIFO file descriptor
    
@@ -39,6 +40,7 @@ void* ThreadHandler(void *arguments)
     struct ArgsThread *args= (struct ArgsThread*)arguments;
 
     pthread_mutex_lock(&lock1);
+    j=cont;
     cont++;
     i = cont;
     pthread_mutex_unlock(&lock1);  
@@ -77,6 +79,7 @@ void* ThreadHandler(void *arguments)
 
     //opens private FIFO por reading
     fd_private_fifo = open(private_fifo, O_RDONLY);
+    fdt[j]=fd_private_fifo;
     response_message.tskres=-2;
     //reads server response and blocks while the server does not respond 
     read(fd_private_fifo, &response_message, sizeof(struct Message));
@@ -166,14 +169,18 @@ int main(int argc, char *argv[], char *envp[])
         //ns = time(NULL);
         th++;
     }
-//usleep(500000);
-char str[256];
+usleep(500000);
+/*char str[256];
 for(int i=0;i<th;i++){
     snprintf(str,256,"/tmp/%d.%ld",getpid(),tid[i]);
     remove(str);
    
     
+}*/
+for(int i=0;i<cont;i++){
+    close(fdt[i]);
 }
+
     for(int k = 0; k < th; k++)
     {
         pthread_join(tid[k], NULL);
