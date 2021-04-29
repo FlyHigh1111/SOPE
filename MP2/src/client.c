@@ -179,7 +179,7 @@ for(int i=0;i<th;i++){
 }*/
 for(int i=0;i<cont;i++){
     close(fdt[i]);
-    printf("fdt: %d",fdt[i]);
+    printf("fdt: %d \n",fdt[i]);
 }
 
     for(int k = 0; k < th; k++)
