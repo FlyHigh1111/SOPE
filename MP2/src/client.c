@@ -166,11 +166,12 @@ int main(int argc, char *argv[], char *envp[])
         //ns = time(NULL);
         th++;
     }
-usleep(500000);
+//usleep(500000);
 char str[256];
 for(int i=0;i<th;i++){
     snprintf(str,256,"/tmp/%d.%ld",getpid(),tid[i]);
     remove(str);
+   
     
 }
     for(int k = 0; k < th; k++)
