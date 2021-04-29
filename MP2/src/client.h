@@ -1,18 +1,8 @@
 #pragma once
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <string.h>
-#include <time.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <pthread.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <signal.h>
 
-#define CLIENTE -1
+#include "./common.h"
+
+#define CLIENT -1
 #define MAX_THREADS 10000
 #define BUFFER_SIZE 256
 
@@ -20,8 +10,9 @@ pthread_mutex_t lock1; //contains the mutex's state (opened ou closes)
 pthread_mutex_t lock2;
 int errno;
 int cont; //counter of number of threads created by the main thread.
-bool termina=true;
- int fdt[MAX_THREADS] = {0}; 
+bool finish = true;
+int fdt[MAX_THREADS] = {0}; 
+
 /**
  * @brief Struct with the arguments introduced in the command line.
  */
@@ -46,24 +37,12 @@ struct Log
 };
 
 /**
- * @brief Struct with the arguments use in function thread_handle().
+ * @brief Struct with the arguments use in function ThreadHandler().
  */
 struct ArgsThread
 {
     pid_t pid; //process id of the program
     int fd_public_fifo; //file descriptor of the public FIFO
-};
-
-/**
- * @brief Struct for exchange of messages between client and server
- */
-struct Message 
-{
-	int rid;	// request id
-	pid_t pid;	// process id
-	pthread_t tid;	// thread id
-	int tskload;	// task load
-	int tskres;	// task result
 };
 
 /**
@@ -79,10 +58,27 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args);
  * 
  * @param lower: lower number
  * @param upper: upper number
+ * @param seed: seed 
  * @return int: random number created
  */
-int Randomize(int lower, int upper,unsigned int seed);
+int Randomize(int lower, int upper, unsigned int seed);
 
+/**
+ * @brief Handles each thread
+ * 
+ * @param arguments: thread arguments defined in ThreadArgs
+ * @return void* 
+ */
 void* ThreadHandler(void *arguments);
 
+/**
+ * @brief Writes information kept in Log struct in stdout
+ * 
+ * @param log: information to write
+ */
 void WriteLog(struct Log log);
+
+/**
+ * @brief Handles the signal SIGALRM
+ */
+void sigAlrmHandler();

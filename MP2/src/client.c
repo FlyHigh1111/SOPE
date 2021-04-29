@@ -1,6 +1,4 @@
-#include "client.h"
-#include <pthread.h>
-
+#include "./client.h"
 
 void ParseArguments(int argc, char *argv[], struct Arguments *args)
 {
@@ -22,7 +20,6 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
 int Randomize(int lower, int upper, unsigned int seed)
 {
     return (rand_r(&seed) % (upper - lower + 1)) + lower;
-   
 }
 
 
@@ -46,7 +43,6 @@ void* ThreadHandler(void *arguments)
     pthread_mutex_unlock(&lock1);  
 
     //creates private fifo
-    //sprintf(private_fifo, "/tmp/%d.%ld", getpid(), pthread_self());
     snprintf(private_fifo,BUFFER_SIZE, "/tmp/%d.%ld", getpid(), pthread_self());
     mkfifo(private_fifo, 0666);
 
@@ -61,7 +57,7 @@ void* ThreadHandler(void *arguments)
     log.t = t;
     log.pid = args->pid;
     log.tid = pthread_self();
-    log.res = CLIENTE;
+    log.res = CLIENT;
 
     log.oper = "IWANT";
     WriteLog(log);
@@ -69,7 +65,7 @@ void* ThreadHandler(void *arguments)
     //constructs the message to send to the server
     request_message.rid = i;
     request_message.tskload = t;
-    request_message.tskres = CLIENTE;
+    request_message.tskres = CLIENT;
     request_message.pid = args->pid;
     request_message.tid = pthread_self();
 
@@ -82,31 +78,30 @@ void* ThreadHandler(void *arguments)
     fdt[j]=fd_private_fifo;
     
     //reads server response and blocks while the server does not respond 
-    if(read(fd_private_fifo, &response_message, sizeof(struct Message))==-1){
-    
-        if(!termina){
+    if(read(fd_private_fifo, &response_message, sizeof(struct Message)) == -1)
+    {
+        if(!finish)
+        {
             log.oper="GAVUP";
             log.res=-1;
         }
     }
-   else{
-    //checks server response (get last param in order to check if service  is closed)
-    if(response_message.tskres==-1){
-        log.oper="CLOSD";
-        termina=false;
+    else
+    {
+        //checks server response (get last param in order to check if service  is closed)
+        if(response_message.tskres==-1)
+        {
+            log.oper="CLOSD";
+            finish = false;
+        }
+        else
+        {
+            log.res = response_message.tskres;
+            log.oper = "GOTRS";
+        }
     }
-    else{
-        log.res=response_message.tskres;
-        log.oper = "GOTRS";
-    }
-   }
-    /*if(!termina){
-    
-    log.oper="GAVUP";
-    }*/
     
     WriteLog(log);
-
 
     close(fd_private_fifo);
     unlink(private_fifo);  
@@ -116,13 +111,13 @@ void* ThreadHandler(void *arguments)
 
 void WriteLog(struct Log log)
 {
-    // estrutura: inst ; i ; t ; pid ; tid ; res ; oper
+    // structure: inst ; i ; t ; pid ; tid ; res ; oper
     fprintf(stdout, "%ld ; %d ; %d ; %d ; %ld ; %d ; %s\n", time(NULL), log.i, log.t, log.pid, log.tid, log.res, log.oper);
 }
 
-void sigAlrmHandler(){
-    termina=false;
-
+void sigAlrmHandler()
+{
+    finish = false;
 }
 
 
@@ -133,17 +128,18 @@ int main(int argc, char *argv[], char *envp[])
 
    signal(SIGALRM,sigAlrmHandler);
 
-
     cont = 0; //variable updated by each thread
 
     ParseArguments(argc ,argv, &args);
     int fd = 0;
+
     //open public FIFO
-    while(1){
+    while(1)
+    {
         fd = open(args.public_fifo, O_WRONLY);
         if(fd != -1)
         {
-            //fprintf(stderr, "Error opening FIFO");
+            fprintf(stderr, "Error: %d\n", errno);
             break;
         }
     }
@@ -154,33 +150,23 @@ int main(int argc, char *argv[], char *envp[])
     int th = 0; //thread counter
     pthread_t tid[MAX_THREADS] = {0}; //array with thread's tids
   
-    //time_t inst;
-    //inst = time(NULL);
-    //time_t ns = inst;
     //invoca funçao alarm para despoletar o SIGALRM ao fim nsecs
     alarm(args.nsecs);
-    while(termina)
-     //while(ns < inst + args.nsecs)
+    while(finish)
     {
         if(pthread_create(&tid[th], NULL, ThreadHandler, &argsth) != 0){
             fprintf(stderr, "Error: %d\n", errno);
         }
         usleep(5000); //5ms
-        //ns = time(NULL);
         th++;
     }
-usleep(3000);
-/*char str[256];
-for(int i=0;i<th;i++){
-    snprintf(str,256,"/tmp/%d.%ld",getpid(),tid[i]);
-    remove(str);
-   
-    
-}*/
-for(int i=0;i<cont;i++){
-    close(fdt[i]);
-    printf("fdt: %d i:%d \n",fdt[i],i);
-}
+    usleep(3000);
+
+    for(int i = 0; i < cont; i++)
+    {
+        close(fdt[i]);
+        printf("fdt: %d i:%d \n", fdt[i], i);
+    }
 
     for(int k = 0; k < th; k++)
     {
