@@ -25,11 +25,6 @@ main() {
 			run_client -t 10 /tmp/fifo_"${USER}";
 			sleep 1 ;
 			run_server -t 20 -l 10 /tmp/fifo_"${USER}";;
-		4) echo ":::: Test case $1 - Server starts late";
-			clean;
-			run_client -t 5 /tmp/fifo_"${USER}";
-			sleep 1 ;
-			run_server -t 5 -l 10 /tmp/fifo_"${USER}";;
 		*)  echo "Usage: $0 <test_no> || $0 clean" ;
 			exit 1 ;;
 	esac
@@ -147,8 +142,8 @@ verifySequences() {
 
   if [ "$ID_CLIENT" = "$ID_EXEC_2LATE" ]; then echo "ALL OK"; else echo "ERROR: OPERATIONS EXECUTED DIFFER ON CLIENT vs SERVER"; fi
   if [ "$RES_CLIENT" = "$RES_DONE" ]; then echo "ALL OK"; else echo "ERROR: RESULTS RETURNED DIFFER ON CLIENT vs SERVER"; fi
-  if [ "$RES_CLIENT" = "$RES_EXEC" ]; then echo "ALL OK"; else echo "ERROR: RESULTS RETURNED DIFFER ON CLIENT vs SERVER"; fi
-  if [ "$RES_EXEC" = "$RES_DONE" ]; then echo "ALL OK"; else echo "ERROR: RESULTS RECEIVED DIFFER FROM SENT"; fi
+###25abr  if [ "$RES_CLIENT" = "$RES_EXEC" ]; then echo "ALL OK"; else echo "ERROR: RESULTS RETURNED DIFFER ON CLIENT vs SERVER"; fi
+###25abr  if [ "$RES_EXEC" = "$RES_DONE" ]; then echo "ALL OK"; else echo "ERROR: RESULTS RECEIVED DIFFER FROM SENT"; fi
 }
 
 main "$@"
