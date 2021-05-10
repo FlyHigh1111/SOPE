@@ -52,18 +52,14 @@ void sigAlrmHandlerS(int signum){
 int main(int argc,char** argv){
     struct Arguments args;
     struct ArgsThread argsth;
-    printf("Entrou\n");
     ParseArguments(argc,argv,&args);
     //creates public fifo 
-    printf("Entrou1\n");
     mkfifo(args.public_fifo,0666);
-    printf("Entrou2\n");
     signal(SIGALRM,sigAlrmHandlerS);
-printf("Entrou3\n");
-    
+    printf("Entrou3\n");
     //opens public fifo for reading
-    int fd_publicfifo=open(args.public_fifo,O_RDONLY);
-printf("Entrou4\n");
+    int fd_publicfifo=open(args.public_fifo,O_NONBLOCK,O_RDONLY);
+    printf("Entrou4\n");
     //Implementar armazem com fila (cabeça da fila com ponteiros para inicio e fim ) 
     //funçao push->mete elemento no final da fila
     //funçao pop()->retira elemento da fila no inicio
