@@ -33,11 +33,11 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
         exit(1);
     }
 
-
+ fprintf(stderr, "Entrou1!\n");
     args->nsecs = atoi(argv[2]);
-
+   fprintf(stderr, "Entrou2!\n");
     if(argc==4){
-        fprintf(stderr, "Entrou!\n");
+        fprintf(stderr, "Entrou3!\n");
         args->buffer_size=BUFF_SIZE;
         args->public_fifo = argv[3];
     }
