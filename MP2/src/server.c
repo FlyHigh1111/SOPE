@@ -37,7 +37,7 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
     args->nsecs = atoi(argv[2]);
 
     if(argc==4){
-    
+        args->buffer_size=BUFF_SIZE;
         args->public_fifo = argv[3];
     }
     if(argc==6){
@@ -50,6 +50,7 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
 int main(int argc,char** argv){
     struct Arguments args;
     ParseArguments(argc,argv,&args);
+  
     printf("nsec: %ld buff: %d fifoname: %s", args.nsecs,args.buffer_size,args.public_fifo);
     return 0;
 

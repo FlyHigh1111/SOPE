@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
+#define BUFF_SIZE 1024;
 struct Arguments
 {
     size_t nsecs;      //number of seconds
