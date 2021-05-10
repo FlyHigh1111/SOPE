@@ -52,6 +52,7 @@ void sigAlrmHandlerS(int signum){
 int main(int argc,char** argv){
     struct Arguments args;
     struct ArgsThread argsth;
+    printf("Entrou");
     ParseArguments(argc,argv,&args);
     //creates public fifo 
     printf("Entrou1");
