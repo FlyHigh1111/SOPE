@@ -54,13 +54,15 @@ int main(int argc,char** argv){
     struct ArgsThread argsth;
     ParseArguments(argc,argv,&args);
     //creates public fifo 
+    printf("Entrou1");
     mkfifo(args.public_fifo,0666);
+    printf("Entrou2");
     signal(SIGALRM,sigAlrmHandlerS);
-
+printf("Entrou3");
     
     //opens public fifo for reading
     int fd_publicfifo=open(args.public_fifo,O_RDONLY);
-
+printf("Entrou4");
     //Implementar armazem com fila (cabeça da fila com ponteiros para inicio e fim ) 
     //funçao push->mete elemento no final da fila
     //funçao pop()->retira elemento da fila no inicio
