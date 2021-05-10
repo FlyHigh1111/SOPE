@@ -37,6 +37,7 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
     args->nsecs = atoi(argv[2]);
 
     if(argc==4){
+        fprintf(stderr, "Entrou!\n");
         args->buffer_size=BUFF_SIZE;
         args->public_fifo = argv[3];
     }
