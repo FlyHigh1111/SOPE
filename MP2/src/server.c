@@ -50,7 +50,7 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
 int main(int argc,char** argv){
     struct Arguments args;
     ParseArguments(argc,argv,&args);
-    printf("nsec: %d buff: %d fifoname: %s", args.nsecs,args.buffer_size,args.public_fifo);
+    printf("nsec: %ld buff: %d fifoname: %s", args.nsecs,args.buffer_size,args.public_fifo);
     return 0;
 
 }
