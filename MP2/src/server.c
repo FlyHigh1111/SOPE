@@ -27,24 +27,24 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
         exit(1);
 
     }
-
+if(argc==6){
     if((!isNumeric(argv[4]) || atoi(argv[4])<0) && argc==6){
+   
         fprintf(stderr, "Buffer size should be a positive integer!\n");
         exit(1);
     }
+     args->buffer_size=atoi(argv[4]);
+     args->public_fifo = argv[5];
+}
 
- fprintf(stderr, "Entrou1!\n");
+
     args->nsecs = atoi(argv[2]);
-   fprintf(stderr, "Entrou2!\n");
+
     if(argc==4){
-        fprintf(stderr, "Entrou3!\n");
         args->buffer_size=BUFF_SIZE;
         args->public_fifo = argv[3];
     }
-    if(argc==6){
-        args->buffer_size=atoi(argv[4]);
-        args->public_fifo = argv[5];
-    }
+   
 }
 
 
