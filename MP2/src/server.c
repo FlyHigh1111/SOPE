@@ -22,7 +22,7 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
         fprintf(stderr, "Usage: s <-t nsecs> [-l buffsize] fifoname\n");
         exit(1);
     } 
-    if(!isNumeric(argv[2]) || atoi(argv[2]<0)){
+    if(!isNumeric(argv[2]) || atoi(argv[2])<0){
         fprintf(stderr, "Number of seconds should be a positive integer!\n");
         exit(1);
 
