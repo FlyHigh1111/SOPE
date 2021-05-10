@@ -28,7 +28,7 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
 
     }
 
-    if(!isNumeric((argv[4]) || atoi(argv[4]<0)) && argc==6){
+    if((!isNumeric(argv[4]) || atoi(argv[4]<0)) && argc==6){
         fprintf(stderr, "Buffer size should be a positive integer!\n");
         exit(1);
     }
