@@ -1,6 +1,7 @@
 #pragma once
 #include "./common.h"
-
+#include <stdio.h>
+#include <ctype.h>
 
 struct Arguments
 {
@@ -8,3 +9,5 @@ struct Arguments
     int buffer_size;    //buffer size
     char *public_fifo; //public FIFO
 };
+
+bool isNumeric(char num[]);
