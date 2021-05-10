@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#include "client.h"
+
 
 #define BUFF_SIZE 1024;
 struct Arguments
@@ -14,6 +14,12 @@ struct Arguments
     int buffer_size;    //buffer size
     char *public_fifo; //public FIFO
 };
+struct ArgsThread
+{
+    pid_t pid; //process id of the program
+    int fd_public_fifo; //file descriptor of the public FIFO
+};
+
 bool finish=false;
 
 bool isNumeric(char num[]);
