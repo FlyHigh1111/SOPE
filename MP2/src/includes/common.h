@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <signal.h>
 
+
 /**
  * @brief Struct for exchange of messages between client and server
  */
