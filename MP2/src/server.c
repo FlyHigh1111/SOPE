@@ -48,10 +48,10 @@ void sigAlrmHandlerS(int signum){
     finish=true;
 }
 
-void ThreadHandlerCons(){
+void* ThreadHandlerCons(){
 
 }
-void ThreadHandlerProd(){
+void* ThreadHandlerProd(){
 
 }
 

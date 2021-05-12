@@ -20,6 +20,11 @@ struct ArgsThread
     int fd_public_fifo; //file descriptor of the public FIFO
 };
 
+struct Queue{
+    int primeiro;//indice do primeiro elemento da fila(-1 se fila vazia )
+    int ultimo;//indice do ultimo elemento da fila (-1 se fila vazia )
+};
+
 struct ArgsThreadSProd
 {   int rid; 		// request id
 	pid_t pid; 	    // process id
@@ -33,13 +38,6 @@ struct ArgsThreadSProd
 struct ArgsThreadSCon
 {  
     struct Queue queue; //armazem
-};
-
-struct Queue{
-    int primeiro;//indice do primeiro elemento da fila(-1 se fila vazia )
-    int ultimo;//indice do ultimo elemento da fila (-1 se fila vazia )
-
-
 };
 
 bool finish=false;
