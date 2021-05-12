@@ -5,9 +5,13 @@
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include "./lib.h"
+#include "./queue.h"
+
 
 #define MAX_THREADS 10000
-#define BUFF_SIZE 1024;
+
+pthread_mutex_t lock;
 struct Arguments
 {
     size_t nsecs;      //number of seconds
@@ -26,20 +30,14 @@ struct ArgsThreadSProd
 	pthread_t tid;	// thread id
 	int tskload;    // task load
 	int tskres;		// task result
-    struct Queue queue; //armazem
+    struct Message *armazem ; //armazem
+    int nmax;//numero max delementos armazem
 
 };
 
 struct ArgsThreadSCon
 {  
     struct Queue queue; //armazem
-};
-
-struct Queue{
-    int primeiro;//indice do primeiro elemento da fila(-1 se fila vazia )
-    int ultimo;//indice do ultimo elemento da fila (-1 se fila vazia )
-
-
 };
 
 bool finish=false;

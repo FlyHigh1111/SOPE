@@ -13,7 +13,8 @@
 #include <sys/stat.h>
 #include <signal.h>
 
-
+#define BUFF_SIZE 1024;
+#define BUFFER_SIZE 256
 /**
  * @brief Struct for exchange of messages between client and server
  */

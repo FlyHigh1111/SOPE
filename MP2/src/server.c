@@ -1,5 +1,6 @@
 #include "./includes/server.h"
 
+
 bool isNumeric(char num[] ){
     for(int i=0;i<strlen(num);i++)
     { 
@@ -48,16 +49,58 @@ void sigAlrmHandlerS(int signum){
     finish=true;
 }
 
-void ThreadHandlerCons(){
+void ThreadHandlerCons(void *arguments){
+    //struct Queue queue;
+    struct Message response_message;
+    struct ArgsThreadSCon* args=(struct ArgsThreadSCon*)arguments;
+    char private_fifo[BUFFER_SIZE];
 
+    while(1){
+        //aceder ao armazem e retirar a prox mensagem
+            //verificar se fila vazia
+            //top do valor do inicio da fila 
+            //pop 
+        //escrever resposta no fifoprivado correspondente do cliente
+        snprintf(private_fifo,BUFFER_SIZE, "/tmp/%d.%ld",response_message.pid,response_message.tid);
+        int fd_private_fifo = open(private_fifo, O_RDONLY);
+        write(fd_private_fifo,&response_message,sizeof(response_message));
+        
+        
+    }
 }
-void ThreadHandlerProd(){
+void ThreadHandlerProd(void *arguments){
+    
+    struct Message response_message;
+    
+    struct ArgsThreadSProd* args=(struct ArgsThreadSProd*)arguments;
 
+    //constroi resposta a colocar no armazem
+    response_message.rid=args->rid;
+    response_message.pid=args->pid;
+    response_message.tskload=args->tskload;
+    response_message.tid=args->tid;
+
+    //chama biblioteca para obter resultado em funçao da carga(tskload) do pedido
+    response_message.tskres=task(args->tskload);
+
+    
+    //colocar resposta no armazem
+    pthread_mutex_lock(&lock);
+    while(pushbackqueue(&queue,args->armazem, response_message,args->nmax)){
+
+    }
+    pthread_mutex_unlock(&lock);
+
+    
+
+
+    
+    pthread_exit(NULL);//termina thread
 }
 
 int main(int argc,char** argv){
     struct Arguments args;
-    struct Queue queue;
+   
     struct ArgsThreadSProd argsthsprod;
     struct ArgsThreadSCon argsthscon;
     struct Message request_message;
@@ -72,15 +115,15 @@ int main(int argc,char** argv){
 
     //aloca espaço na heap  para armazem
     struct Message *armazem=(struct Message*)malloc(sizeof(struct Message)*args.buffer_size);//paramentro de buff_size em nº
-    //struct Message *armazem=(struct Message*)malloc(args.buffer_size);//paramentro de buff_size em bytes
+    
     //inicialiiza cabeça da fila do armazem
-    queue.primeiro=-1;
-    queue.ultimo=-1;
+    queue=initqueue();
+    
 
     //cria thread consumidor
     pthread_create(&tid[0],NULL,ThreadHandlerCons,&argsthscon); 
 
-
+    //inicia contagem de tempo para emissao sinal sigalrm
     alarm(args.nsecs);
     
     while(!finish){
@@ -91,7 +134,9 @@ int main(int argc,char** argv){
             argsthsprod.pid =request_message.pid;
             argsthsprod.tskres=request_message.tskres;
             argsthsprod.tskload=request_message.tskload;
-            argsthsprod.queue=queue;
+            argsthsprod.armazem=armazem;
+            argsthsprod.nmax=args.buffer_size;
+           
             pthread_create(&tid[0],NULL,ThreadHandlerProd,&argsthsprod);
             printf("Processa pedidos\n");
         }
