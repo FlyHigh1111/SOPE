@@ -117,7 +117,7 @@ int main(int argc,char** argv){
     struct Message *armazem=(struct Message*)malloc(sizeof(struct Message)*args.buffer_size);//paramentro de buff_size em nº
     
     //inicialiiza cabeça da fila do armazem
-    queue=initqueue();
+    //queue=initqueue();
     
 
     //cria thread consumidor
