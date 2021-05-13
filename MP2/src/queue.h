@@ -14,9 +14,9 @@ struct Queue{
 
 struct Queue queue;
 
-struct Queue initqueue();
+void initqueue(struct Queue *q);
 bool queueIsEmpty(struct Queue *q);
-bool queueIsFull(struct Queue *q);
+bool queueIsFull(struct Queue *q,int nmax);
 bool pushbackqueue(struct Queue *q,struct Message armazem[],struct Message new_message,int nmax);
 bool topQueue(struct Queue *q,struct Message armazem[],struct Message *top);
 bool popQueue(struct Queue *q,struct Message armazem[],int nmax);

@@ -1,11 +1,9 @@
 #include "./queue.h"
 
 
-struct Queue initqueue(){
-    struct Queue q;
-    q.primeiro=-1;
-    q.ultimo=-1;
-    return q;
+void initqueue(struct Queue *q){
+    q->primeiro=-1;
+    q->ultimo=-1;
 }
 
 

@@ -56,14 +56,20 @@ void ThreadHandlerCons(void *arguments){
     char private_fifo[BUFFER_SIZE];
 
     while(1){
-        //aceder ao armazem e retirar a prox mensagem
+        //verificar se fila vazia
+        if(!queueIsEmpty(&queue)){
+            //aceder ao armazem e retirar a prox mensagem
+            topQueue(&queue,args->armazem,&response_message);
+            popQueue(&queue,args->armazem,args->nmax);
+             //escrever resposta no fifoprivado correspondente do cliente
+            snprintf(private_fifo,BUFFER_SIZE, "/tmp/%d.%ld",response_message.pid,response_message.tid);
+            int fd_private_fifo = open(private_fifo, O_RDONLY);
+            write(fd_private_fifo,&response_message,sizeof(response_message));
+
+        }
+        
             //verificar se fila vazia
-            //top do valor do inicio da fila 
-            //pop 
-        //escrever resposta no fifoprivado correspondente do cliente
-        snprintf(private_fifo,BUFFER_SIZE, "/tmp/%d.%ld",response_message.pid,response_message.tid);
-        int fd_private_fifo = open(private_fifo, O_RDONLY);
-        write(fd_private_fifo,&response_message,sizeof(response_message));
+            
         
         
     }
@@ -91,10 +97,7 @@ void ThreadHandlerProd(void *arguments){
     }
     pthread_mutex_unlock(&lock);
 
-    
 
-
-    
     pthread_exit(NULL);//termina thread
 }
 
@@ -117,15 +120,19 @@ int main(int argc,char** argv){
     struct Message *armazem=(struct Message*)malloc(sizeof(struct Message)*args.buffer_size);//paramentro de buff_size em nº
     
     //inicialiiza cabeça da fila do armazem
-    //queue=initqueue();
+    initqueue(&queue);
     
+    //inicializa args para handler do thread consumidor
+    argsthscon.armazem=armazem;
+    argsthscon.nmax=args.buffer_size;
 
     //cria thread consumidor
     pthread_create(&tid[0],NULL,ThreadHandlerCons,&argsthscon); 
+    int th=1;//inicializa thread counter
 
     //inicia contagem de tempo para emissao sinal sigalrm
     alarm(args.nsecs);
-    
+
     while(!finish){
         //ler os pedidos que chegam pelo fifopublico
         if(read(fd_publicfifo, &request_message, sizeof(struct Message))!=-1){
@@ -137,13 +144,21 @@ int main(int argc,char** argv){
             argsthsprod.armazem=armazem;
             argsthsprod.nmax=args.buffer_size;
            
-            pthread_create(&tid[0],NULL,ThreadHandlerProd,&argsthsprod);
+            pthread_create(&tid[th],NULL,ThreadHandlerProd,&argsthsprod);
+            th++;
+
             printf("Processa pedidos\n");
-        }
-
-
-        
+        }  
     }
+    
+    //thread principal espera que threads produtores (k>=1) e consumidor (k=0) terminem
+    for(int k = 0; k < th; k++)
+    {
+        pthread_join(tid[k], NULL);
+    }
+
+    //fecha fifpublico depois de terminado o tempo de execuçao do servidor 
+    close(fd_publicfifo);
     //liberta espaço do buffer (armazem)
     free(armazem);
 

@@ -42,7 +42,8 @@ struct ArgsThreadSProd
 
 struct ArgsThreadSCon
 {  
-    struct Queue queue; //armazem
+    struct Message *armazem; //armazem
+    int nmax;
 };
 
 bool finish=false;
