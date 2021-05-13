@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include <signal.h>
 #include <ctype.h>
-#include "./lib.h"
+#include "lib.h"
 
 #define BUFF_SIZE 1024;
 #define BUFFER_SIZE 256
