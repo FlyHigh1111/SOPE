@@ -84,7 +84,7 @@ void* ThreadHandlerProd(void *arguments){
     response_message.pid=args->pid;
     response_message.tskload=args->tskload;
     response_message.tid=args->tid;
-
+    printf("tskload:/n",args->tskload);
     //chama biblioteca para obter resultado em funçao da carga(tskload) do pedido
     response_message.tskres=task(args->tskload);
 
@@ -146,7 +146,6 @@ int main(int argc,char** argv){
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
             th++;
 
-            printf("Processa pedidos\n");
         }  
     }
 
