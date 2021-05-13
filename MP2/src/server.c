@@ -1,7 +1,14 @@
 #include "./includes/server.h"
 #include "./includes/queue.h"
 
-
+bool isNumeric(char num[] ){
+     for(int i=0;i<strlen(num);i++)
+     { 
+         if(!isdigit(num[i]))
+             return false;
+     }
+     return true;
+ }
 void ParseArguments(int argc, char *argv[], struct Arguments *args)
 {
     if(argc !=4 && argc!=6 )
