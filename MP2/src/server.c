@@ -1,5 +1,5 @@
 #include "./includes/server.h"
-//#include "./includes/queue.h"
+#include "./includes/queue.h"
 struct Queue{
     int primeiro;//indice do primeiro elemento da fila(-1 se fila vazia )
     int ultimo;//indice do ultimo elemento da fila (-1 se fila vazia )

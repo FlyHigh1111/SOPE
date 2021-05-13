@@ -1,4 +1,4 @@
-/*#include "./includes/queue.h"
+#include "./includes/queue.h"
 
 
 
@@ -59,4 +59,4 @@ bool popQueue(struct Queue *q,struct Message armazem[],int nmax){
     
     else{q->primeiro=0;}
     return true;
-}*/
+}
