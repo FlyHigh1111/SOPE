@@ -131,10 +131,11 @@ int main(int argc,char** argv){
 
     //inicia contagem de tempo para emissao sinal sigalrm
     alarm(args.nsecs);
-
+    int j;
     while(!finish){
         //ler os pedidos que chegam pelo fifopublico
-        if(read(fd_publicfifo, &request_message, sizeof(struct Message))!=-1){
+        if((j=read(fd_publicfifo, &request_message, sizeof(struct Message)))!=-1){
+            printf("j: %d /n",j);
             argsthsprod.rid=request_message.rid;
             argsthsprod.tid=request_message.tid;
             argsthsprod.pid =request_message.pid;
@@ -142,7 +143,7 @@ int main(int argc,char** argv){
             argsthsprod.tskload=request_message.tskload;
             argsthsprod.armazem=armazem;
             argsthsprod.nmax=args.buffer_size;
-           
+            
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
             th++;
 
