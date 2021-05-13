@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "xmod.h": "c",
-        "ctype.h": "c"
+        "ctype.h": "c",
+        "queue.h": "c"
     }
 }
