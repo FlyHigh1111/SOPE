@@ -49,7 +49,7 @@ void sigAlrmHandlerS(int signum){
     finish=true;
 }
 
-void ThreadHandlerCons(void *arguments){
+void* ThreadHandlerCons(void *arguments){
     //struct Queue queue;
     struct Message response_message;
     struct ArgsThreadSCon* args=(struct ArgsThreadSCon*)arguments;
@@ -74,7 +74,7 @@ void ThreadHandlerCons(void *arguments){
         
     }
 }
-void ThreadHandlerProd(void *arguments){
+void* ThreadHandlerProd(void *arguments){
     
     struct Message response_message;
     
