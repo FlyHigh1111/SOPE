@@ -1,5 +1,6 @@
 #include "./includes/client.h"
-
+#include <pthread.h>
+#include <sys/types.h>
 
 void ParseArguments(int argc, char *argv[], struct Arguments *args)
 {
