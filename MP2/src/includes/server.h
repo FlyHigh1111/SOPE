@@ -6,7 +6,7 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include "./lib.h"
-#include "./queue.h"
+#include "queue.h"
 
 
 #define MAX_THREADS 10000
