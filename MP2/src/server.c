@@ -127,7 +127,7 @@ int main(int argc,char** argv){
     argsthscon.nmax=args.buffer_size;
 
     //cria thread consumidor
-    pthread_create(&tid[0],NULL,ThreadHandlerCons,&argsthscon); 
+    pthread_create(&tid[0],NULL,&ThreadHandlerCons,&argsthscon); 
     int th=1;//inicializa thread counter
 
     //inicia contagem de tempo para emissao sinal sigalrm
@@ -144,13 +144,13 @@ int main(int argc,char** argv){
             argsthsprod.armazem=armazem;
             argsthsprod.nmax=args.buffer_size;
            
-            pthread_create(&tid[th],NULL,ThreadHandlerProd,&argsthsprod);
+            pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
             th++;
 
             printf("Processa pedidos\n");
         }  
     }
-    
+
     //thread principal espera que threads produtores (k>=1) e consumidor (k=0) terminem
     for(int k = 0; k < th; k++)
     {

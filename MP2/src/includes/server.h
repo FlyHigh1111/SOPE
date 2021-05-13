@@ -24,10 +24,6 @@ struct ArgsThread
     int fd_public_fifo; //file descriptor of the public FIFO
 };
 
-struct Queue{
-    int primeiro;//indice do primeiro elemento da fila(-1 se fila vazia )
-    int ultimo;//indice do ultimo elemento da fila (-1 se fila vazia )
-};
 
 struct ArgsThreadSProd
 {   int rid; 		// request id
