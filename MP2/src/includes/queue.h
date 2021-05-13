@@ -1,12 +1,7 @@
 #pragma once
-#include <stdio.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#include <stdbool.h>
-#include "./server.h"
-#include "./common.h"
+
+#include "common.h"
+
 
 struct Queue{
     int primeiro;//indice do primeiro elemento da fila(-1 se fila vazia )
