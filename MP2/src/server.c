@@ -93,7 +93,7 @@ void* ThreadHandlerProd(void *arguments){
     //colocar resposta no armazem
     pthread_mutex_lock(&lock);
     while(pushbackqueue(&queue,args->armazem, response_message,args->nmax)){
-
+        printf("produtor entrou queue %d \n",queue.primeiro);
     }
     pthread_mutex_unlock(&lock);
 
