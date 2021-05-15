@@ -137,7 +137,7 @@ int main(int argc,char** argv){
     int j;
     while(!finish){
         //ler os pedidos que chegam pelo fifopublico
-        if((j=read(fd_publicfifo, &request_message, sizeof(struct Message)))==sizeof(struct Message)){
+        if((j=read(fd_publicfifo, &request_message, sizeof(struct Message)))>0){
             argsthsprod.rid=request_message.rid;
             argsthsprod.tid=request_message.tid;
             argsthsprod.pid =request_message.pid;
@@ -145,10 +145,10 @@ int main(int argc,char** argv){
             argsthsprod.tskload=request_message.tskload;
             argsthsprod.armazem=armazem;
             argsthsprod.nmax=args.buffer_size;
-            //printf("pid %d tid %ld tskload %d \n",request_message.pid,request_message.tid,request_message.tskload);
+            printf("pid %d tid %ld tskload %d  th: %d\n",request_message.pid,request_message.tid,request_message.tskload,th);
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
             th++;
-       
+       j=0;
 
         }     
     }
