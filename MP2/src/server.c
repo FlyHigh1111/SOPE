@@ -146,7 +146,7 @@ int main(int argc,char** argv){
             argsthsprod.tskload=request_message.tskload;
             argsthsprod.armazem=armazem;
             argsthsprod.nmax=args.buffer_size;
-            printf("pid %d tid %ld",request_message.pid,request_message.tid);
+            printf("pid %d tid %ld \n",request_message.pid,request_message.tid);
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
             th++;
        
