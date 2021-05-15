@@ -57,6 +57,7 @@ void* ThreadHandlerCons(void *arguments){
     while(1){
         //verificar se fila vazia
         if(!queueIsEmpty(&queue)){
+            printf("consumidor entrou na fila \n");
             //aceder ao armazem e retirar a prox mensagem
             topQueue(&queue,args->armazem,&response_message);
             popQueue(&queue,args->armazem,args->nmax);
