@@ -146,17 +146,12 @@ int main(int argc,char** argv){
             argsthsprod.tskload=request_message.tskload;
             argsthsprod.armazem=armazem;
             argsthsprod.nmax=args.buffer_size;
-            
+            printf("pid %d tid %ld",request_message.pid,request_message.tid);
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
             th++;
        
 
-        }  
-        else{
-            if(errno==EAGAIN){
-                printf("eagain \n");
-            }
-        }
+        }     
     }
     printf("saiu \n");
     //thread principal espera que threads produtores (k>=1) e consumidor (k=0) terminem
