@@ -78,7 +78,7 @@ void* ThreadHandlerProd(void *arguments){
     struct Message response_message;
     
     struct ArgsThreadSProd* args=(struct ArgsThreadSProd*)arguments;
-    printf("tskload_entrada: %d tid :%ld tid_self:%ld \n",args->tskload,args->tid,pthread_self());
+    //printf("tskload_entrada: %d tid :%ld tid_self:%ld \n",args->tskload,args->tid,pthread_self());
     //constroi resposta a colocar no armazem
     response_message.rid=args->rid;
     response_message.pid=args->pid;
@@ -145,10 +145,10 @@ int main(int argc,char** argv){
             argsthsprod[th].tskload=request_message.tskload;
             argsthsprod[th].armazem=armazem;
             argsthsprod[th].nmax=args.buffer_size;
-            printf("pid %d tid %ld tskload %d  th: %d\n",request_message.pid,request_message.tid,request_message.tskload,th);
+            //printf("pid %d tid %ld tskload %d  th: %d\n",request_message.pid,request_message.tid,request_message.tskload,th);
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod[th]);
             th++;
-       j=0;
+       
 
         }     
     }
