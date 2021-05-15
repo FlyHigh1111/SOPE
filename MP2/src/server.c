@@ -135,7 +135,7 @@ int main(int argc,char** argv){
     //inicia contagem de tempo para emissao sinal sigalrm
     alarm(args.nsecs);
     int j;
-    while(th<=10){
+    while(!finish){
         //ler os pedidos que chegam pelo fifopublico
         if((j=read(fd_publicfifo, &request_message, sizeof(struct Message)))>0){
             argsthsprod[th].rid=request_message.rid;
