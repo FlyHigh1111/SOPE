@@ -84,7 +84,7 @@ void* ThreadHandlerProd(void *arguments){
     response_message.pid=args->pid;
     response_message.tskload=args->tskload;
     response_message.tid=args->tid;
-    printf("tskload:%d /n",args->tskload);
+    //printf("tskload:%d /n",args->tskload);
     //chama biblioteca para obter resultado em funçao da carga(tskload) do pedido
     response_message.tskres=task(args->tskload);
 
@@ -146,7 +146,7 @@ int main(int argc,char** argv){
             argsthsprod.tskload=request_message.tskload;
             argsthsprod.armazem=armazem;
             argsthsprod.nmax=args.buffer_size;
-            printf("pid %d tid %ld \n",request_message.pid,request_message.tid);
+            printf("pid %d tid %ld tskload %d \n",request_message.pid,request_message.tid,request_message.tskload);
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
             th++;
        
