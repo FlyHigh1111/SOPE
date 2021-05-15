@@ -146,9 +146,12 @@ int main(int argc,char** argv){
             
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
             th++;
-            j++;
+       
 
         }  
+        else{
+            printf("j1: %d /n",j);
+        }
     }
 
     //thread principal espera que threads produtores (k>=1) e consumidor (k=0) terminem
