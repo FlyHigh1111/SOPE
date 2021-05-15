@@ -89,7 +89,7 @@ void* ThreadHandlerProd(void *arguments){
     //printf("tskload:%d /n",args->tskload);
     //chama biblioteca para obter resultado em funçao da carga(tskload) do pedido
     response_message.tskres=task(args->tskload);
-
+    printf("produto entrada ciclo: %d \n", queueIsFull(&queue,args->nmax));
     //colocar resposta no armazem
     while(queueIsFull(&queue,args->nmax));
     pthread_mutex_lock(&lock);
@@ -138,7 +138,7 @@ int main(int argc,char** argv){
     //inicia contagem de tempo para emissao sinal sigalrm
     alarm(args.nsecs);
     int j;
-    while(!finish){
+    while(th<=10){
         //ler os pedidos que chegam pelo fifopublico
         if((j=read(fd_publicfifo, &request_message, sizeof(struct Message)))>0){
             argsthsprod[th].rid=request_message.rid;
