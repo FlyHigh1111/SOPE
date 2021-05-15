@@ -78,7 +78,7 @@ void* ThreadHandlerProd(void *arguments){
     struct Message response_message;
     
     struct ArgsThreadSProd* args=(struct ArgsThreadSProd*)arguments;
-    printf("tskload_entrada: %d tid :%d \n",args->tskload,args->tid);
+    printf("tskload_entrada: %d tid :%ld \n",args->tskload,args->tid);
     //constroi resposta a colocar no armazem
     response_message.rid=args->rid;
     response_message.pid=args->pid;
