@@ -114,6 +114,10 @@ int main(int argc,char** argv){
     signal(SIGALRM,sigAlrmHandlerS);
     //opens public fifo for reading
     int fd_publicfifo=open(args.public_fifo,O_NONBLOCK,O_RDONLY);
+    if(fd_publicfifo==-1){
+        perror("Erro na abertura do fifo ");
+        return 0;
+    }
 
     //aloca espaço na heap  para armazem
     struct Message *armazem=(struct Message*)malloc(sizeof(struct Message)*args.buffer_size);//paramentro de buff_size em nº
@@ -150,7 +154,7 @@ int main(int argc,char** argv){
 
         }  
         else{
-            printf("j1: %d /n",j);
+            printf("j1: %d \n",j);
         }
     }
 
