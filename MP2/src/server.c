@@ -94,7 +94,7 @@ void* ThreadHandlerProd(void *arguments){
     while(queueIsFull(&queue,args->nmax));
     pthread_mutex_lock(&lock);
     pushbackqueue(&queue,args->armazem, response_message,args->nmax);
-        printf("produtor entrou queue %d %d \n",queue.primeiro,args->armazem[queue.ultimo].tskres);
+        printf("produtor entrou queue %d %d %d \n",queue.primeiro,args->armazem[queue.ultimo].tskres,args->armazem[queue.ultimo].rid);
         
     
     pthread_mutex_unlock(&lock);
