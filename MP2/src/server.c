@@ -56,7 +56,7 @@ void* ThreadHandlerCons(void *arguments){
 
     while(1){
         //verificar se fila vazia
-        printf("consumidor entrou no ciclo \n");
+        printf("consumidor entrou no ciclo: %p \n",queue.primeiro);
         if(!queueIsEmpty(&queue)){
             printf("consumidor entrou na fila \n");
             //aceder ao armazem e retirar a prox mensagem
