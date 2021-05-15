@@ -137,7 +137,7 @@ int main(int argc,char** argv){
     int j;
     while(!finish){
         //ler os pedidos que chegam pelo fifopublico
-        if((j=read(fd_publicfifo, &request_message, sizeof(struct Message)))>0){
+        if((j=read(fd_publicfifo, &request_message, sizeof(struct Message)))==sizeof(struct Message)){
             argsthsprod.rid=request_message.rid;
             argsthsprod.tid=request_message.tid;
             argsthsprod.pid =request_message.pid;
