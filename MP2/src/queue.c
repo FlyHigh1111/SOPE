@@ -26,11 +26,20 @@ bool pushbackqueue(struct Queue *q,struct Message armazem[],struct Message new_m
     if(queueIsFull(q,nmax))
         return false;
 
-    if(q->ultimo<nmax-1)
+    if(queueIsEmpty(q)){
+        armazem[0]=new_message;
+        q->primeiro=0;
+        q->ultimo=0;
+        return true;
+    }
+    if(q->ultimo<nmax-1){
         armazem[q->ultimo+1]=new_message;
+        q->ultimo+=1;
+    }
     
     else{
          armazem[0]=new_message;
+         q->ultimo=0;
     }
 
     return true;
