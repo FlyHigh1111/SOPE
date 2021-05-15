@@ -162,7 +162,7 @@ int main(int argc,char** argv){
 
     //fecha fifpublico depois de terminado o tempo de execuçao do servidor 
     close(fd_publicfifo);
-    unlink(fd_publicfifo);
+    unlink(args.public_fifo);
     //liberta espaço do buffer (armazem)
     free(armazem);
 
