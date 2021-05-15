@@ -4,9 +4,9 @@
 
 void ParseArguments(int argc, char *argv[], struct Arguments *args)
 {
-    if(argc < 4 || strcmp(argv[0], "./client") || strcmp(argv[1], "-t"))
+    if(argc < 4 || strcmp(argv[0], "./c") || strcmp(argv[1], "-t"))
     {
-        fprintf(stderr, "Usage: client <-t nsecs> fifoname\n");
+        fprintf(stderr, "Usage: c <-t nsecs> fifoname\n");
         exit(1);
     } 
     if(argv[2] < 0) 

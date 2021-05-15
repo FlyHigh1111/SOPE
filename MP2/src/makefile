@@ -1,19 +1,10 @@
-all: server lib client queue
+all: s c
 
-#s: server.o lib.o delay.c
-#	gcc -Wall -DDELAY=100 -o s delay.c lib.o server.o -pthread
+c: client.c
+	gcc -Wall -o c client.c -pthread
 
-client: client.c
-	gcc -Wall -o client client.c -pthread
-
-server: server.c
-	gcc -Wall -c -o server server.c 
-
-lib: lib.c
-	gcc -Wall -c -o lib lib.c
-
-queue: queue.c
-	gcc -Wall -c -o queue queue.c
+s: server.c queue.c lib.c delay.c
+	gcc -Wall -o s server.c queue.c lib.c delay.c -pthread
 
 clean:
-	rm -f server lib client queue
+	rm -f s c
