@@ -9,6 +9,7 @@ bool isNumeric(char num[] ){
      }
      return true;
  }
+
 void ParseArguments(int argc, char *argv[], struct Arguments *args)
 {
     if(argc !=4 && argc!=6 )
@@ -67,6 +68,16 @@ void* ThreadHandlerCons(void *arguments){
             int fd_private_fifo = open(private_fifo, O_RDONLY);
             write(fd_private_fifo,&response_message,sizeof(response_message));
 
+            //constructs the message/log to print to stdout
+            struct Log log;
+            log.i = response_message.rid;
+            log.t = response_message.tskload;
+            log.pid = response_message.pid;
+            log.tid = response_message.tid;
+            log.res = response_message.tskres;
+            log.oper = "TSKDN";
+            WriteLog(log);
+
         }
         
             //verificar se fila vazia
@@ -90,12 +101,22 @@ void* ThreadHandlerProd(void *arguments){
     //chama biblioteca para obter resultado em funçao da carga(tskload) do pedido
     response_message.tskres=task(args->tskload);
     printf("produto entrada ciclo: %d \n", queueIsFull(&queue,args->nmax));
+
+    //constructs the message/log to print to stdout
+    struct Log log;
+    log.i = response_message.rid;
+    log.t = response_message.tskload;
+    log.pid = response_message.pid;
+    log.tid = response_message.tid;
+    log.res = response_message.tskres;
+    log.oper = "TSKEX";
+    WriteLog(log);
+
     //colocar resposta no armazem
     while(queueIsFull(&queue,args->nmax));
     pthread_mutex_lock(&lock);
     pushbackqueue(&queue,args->armazem, response_message,args->nmax);
-        printf("produtor entrou queue %d %d %d \n",queue.primeiro,args->armazem[queue.ultimo].tskres,args->armazem[queue.ultimo].rid);
-        
+        printf("produtor entrou queue %d %d %d \n",queue.primeiro,args->armazem[queue.ultimo].tskres,args->armazem[queue.ultimo].rid); 
     
     pthread_mutex_unlock(&lock);
 

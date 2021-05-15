@@ -3,6 +3,7 @@
 #include "./common.h"
 
 #define MAX_THREADS 10000
+#define SERVER -1
 
 pthread_mutex_t lock;
 
@@ -40,3 +41,4 @@ bool finish=false;
 
 bool isNumeric(char num[]);
 void sigAlrmHandlerS(int signum);
+void WriteLog(struct Log log);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./common.h"
+#include "common.h"
 #define CLIENT -1
 #define MAX_THREADS 10000
 
@@ -19,20 +19,6 @@ struct Arguments
 {
     size_t nsecs;      //number of seconds
     char *public_fifo; //public FIFO
-};
-
-/**
- * @brief Struct with information to print to stdout
- */
-struct Log 
-{
-    time_t inst;   //return value of time() function
-    int i;         //unique request number
-    int t;         //task load
-    pid_t pid;     //process ID
-    pthread_t tid; //thread ID
-    int res;       //task result
-    char *oper;    //operation made
 };
 
 /**

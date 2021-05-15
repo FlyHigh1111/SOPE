@@ -26,3 +26,19 @@ struct Message{
 	int tskload;    // task load
 	int tskres;		// task result
 };
+
+/**
+ * @brief Struct with information to print to stdout
+ */
+struct Log 
+{
+    time_t inst;   //return value of time() function
+    int i;         //unique request number
+    int t;         //task load
+    pid_t pid;     //process ID
+    pthread_t tid; //thread ID
+    int res;       //task result
+    char *oper;    //operation made
+};
+
+void WriteLog(struct Log log);
