@@ -146,9 +146,12 @@ int main(int argc,char** argv){
             
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
             th++;
-            j++;
+       
 
         }  
+        else{
+            printf("j1: %d /n",j);
+        }
     }
 
     //thread principal espera que threads produtores (k>=1) e consumidor (k=0) terminem
@@ -159,7 +162,7 @@ int main(int argc,char** argv){
 
     //fecha fifpublico depois de terminado o tempo de execuçao do servidor 
     close(fd_publicfifo);
-    unlink(fd_publicfifo);
+    unlink(args.public_fifo);
     //liberta espaço do buffer (armazem)
     free(armazem);
 
