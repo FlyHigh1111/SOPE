@@ -5,6 +5,7 @@
 #define MAX_THREADS 10000
 
 pthread_mutex_t lock;
+
 struct Arguments
 {
     size_t nsecs;      //number of seconds
