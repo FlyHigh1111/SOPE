@@ -102,7 +102,7 @@ void* ThreadHandlerProd(void *arguments){
 int main(int argc,char** argv){
     struct Arguments args;
    
-    struct ArgsThreadSProd argsthsprod;
+    struct ArgsThreadSProd argsthsprod[MAX_THREADS];
     struct ArgsThreadSCon argsthscon;
     struct Message request_message;
     ParseArguments(argc,argv,&args);
@@ -138,15 +138,15 @@ int main(int argc,char** argv){
     while(th<=10){
         //ler os pedidos que chegam pelo fifopublico
         if((j=read(fd_publicfifo, &request_message, sizeof(struct Message)))>0){
-            argsthsprod.rid=request_message.rid;
-            argsthsprod.tid=request_message.tid;
-            argsthsprod.pid =request_message.pid;
-            argsthsprod.tskres=request_message.tskres;
-            argsthsprod.tskload=request_message.tskload;
-            argsthsprod.armazem=armazem;
-            argsthsprod.nmax=args.buffer_size;
+            argsthsprod[th].rid=request_message.rid;
+            argsthsprod[th].tid=request_message.tid;
+            argsthsprod[th].pid =request_message.pid;
+            argsthsprod[th].tskres=request_message.tskres;
+            argsthsprod[th].tskload=request_message.tskload;
+            argsthsprod[th].armazem=armazem;
+            argsthsprod[th].nmax=args.buffer_size;
             printf("pid %d tid %ld tskload %d  th: %d\n",request_message.pid,request_message.tid,request_message.tskload,th);
-            pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod);
+            pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod[th]);
             th++;
        j=0;
 
