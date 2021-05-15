@@ -91,10 +91,11 @@ void* ThreadHandlerProd(void *arguments){
     response_message.tskres=task(args->tskload);
 
     //colocar resposta no armazem
+    while(queueIsFull(&queue,args->nmax));
     pthread_mutex_lock(&lock);
-    while(pushbackqueue(&queue,args->armazem, response_message,args->nmax)){
+    pushbackqueue(&queue,args->armazem, response_message,args->nmax);
         printf("produtor entrou queue %d \n",queue.primeiro);
-    }
+    
     pthread_mutex_unlock(&lock);
 
 
