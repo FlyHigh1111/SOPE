@@ -1,14 +1,16 @@
 #include "./includes/server.h"
+#include "./includes/common.h"
 #include "./includes/queue.h"
 
-bool isNumeric(char num[] ){
-     for(int i=0;i<strlen(num);i++)
-     { 
-         if(!isdigit(num[i]))
-             return false;
-     }
-     return true;
- }
+bool isNumeric(char num[] )
+{
+    for(int i = 0; i < strlen(num); i++)
+    { 
+        if(!isdigit(num[i]))
+            return false;
+    }
+    return true;
+}
 
 void ParseArguments(int argc, char *argv[], struct Arguments *args)
 {
@@ -31,7 +33,8 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
     }
 
     if(argc==6){
-        if(!isNumeric(argv[4])|| atoi(argv[4])<0){
+        if(!isNumeric(argv[4]) || atoi(argv[4]) < 0)
+        {
             fprintf(stderr, "Buffer size should be a positive integer!\n");
             exit(1);
         }
@@ -40,33 +43,39 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
     }
     args->nsecs = atoi(argv[2]);
 
-    if(argc==4){
-        args->buffer_size=BUFF_SIZE;
+    if(argc==4)
+    {
+        args->buffer_size = BUFF_SIZE;
         args->public_fifo = argv[3];
     }
 }
-void sigAlrmHandlerS(int signum){
-    finish=true;
+void sigAlrmHandlerS(int signum)
+{
+    finish = true;
 }
 
-void* ThreadHandlerCons(void *arguments){
+void* ThreadHandlerCons(void *arguments)
+{
     //struct Queue queue;
     struct Message response_message;
-    struct ArgsThreadSCon* args=(struct ArgsThreadSCon*)arguments;
+    struct ArgsThreadsConsumer* args=(struct ArgsThreadsConsumer*)arguments;
     char private_fifo[BUFFER_SIZE];
 
-    while(1){
-        //verificar se fila vazia
-        printf("consumidor entrou no ciclo: %d \n",queue.primeiro);
-        if(!queueIsEmpty(&queue)){
+    while(1)
+    {
+        //case if queue is not empty
+        printf("consumidor entrou no ciclo: %d \n",queue.first);
+        if(!queueIsEmpty(&queue))
+        {
             printf("consumidor entrou na fila \n");
-            //aceder ao armazem e retirar a prox mensagem
-            topQueue(&queue,args->armazem,&response_message);
-            popQueue(&queue,args->armazem,args->nmax);
-             //escrever resposta no fifoprivado correspondente do cliente
-            snprintf(private_fifo,BUFFER_SIZE, "/tmp/%d.%ld",response_message.pid,response_message.tid);
+            //access the cloud for the next message and pops it 
+            topQueue(&queue, args->cloud, &response_message);
+            popQueue(&queue, args->cloud, args->nmax);
+            
+            //writes response in the private fifo
+            snprintf(private_fifo, BUFFER_SIZE, "/tmp/%d.%ld", response_message.pid, response_message.tid);
             int fd_private_fifo = open(private_fifo, O_RDONLY);
-            write(fd_private_fifo,&response_message,sizeof(response_message));
+            write(fd_private_fifo, &response_message, sizeof(response_message));
 
             //constructs the message/log to print to stdout
             struct Log log;
@@ -80,25 +89,23 @@ void* ThreadHandlerCons(void *arguments){
 
         }
         
-            //verificar se fila vazia
+        //case if queue is empty
             
-        
-        
     }
 }
-void* ThreadHandlerProd(void *arguments){
-    
+void* ThreadHandlerProd(void *arguments)
+{
     struct Message response_message;
     
-    struct ArgsThreadSProd* args=(struct ArgsThreadSProd*)arguments;
-    //printf("tskload_entrada: %d tid :%ld tid_self:%ld \n",args->tskload,args->tid,pthread_self());
-    //constroi resposta a colocar no armazem
+    struct ArgsThreadsProducer* args = (struct ArgsThreadsProducer*)arguments;
+
+    //builds response to put in the cloud
     response_message.rid=args->rid;
     response_message.pid=args->pid;
     response_message.tskload=args->tskload;
     response_message.tid=args->tid;
-    //printf("tskload:%d /n",args->tskload);
-    //chama biblioteca para obter resultado em funçao da carga(tskload) do pedido
+    
+    //calls function from library (lib) to obtain the task load of the request
     response_message.tskres=task(args->tskload);
     printf("produto entrada ciclo: %d \n", queueIsFull(&queue,args->nmax));
 
@@ -112,63 +119,68 @@ void* ThreadHandlerProd(void *arguments){
     log.oper = "TSKEX";
     WriteLog(log);
 
-    //colocar resposta no armazem
+    //puts the response in the cloud
     while(queueIsFull(&queue,args->nmax));
     pthread_mutex_lock(&lock);
-    pushbackqueue(&queue,args->armazem, response_message,args->nmax);
-        printf("produtor entrou queue %d %d %d \n",queue.primeiro,args->armazem[queue.ultimo].tskres,args->armazem[queue.ultimo].rid); 
+    pushBackQueue(&queue,args->cloud, response_message, args->nmax);
+        printf("produtor entrou queue %d %d %d \n",queue.first,args->cloud[queue.last].tskres,args->cloud[queue.last].rid); 
     
     pthread_mutex_unlock(&lock);
 
 
-    pthread_exit(NULL);//termina thread
+    pthread_exit(NULL);
 }
 
-int main(int argc,char** argv){
+int main(int argc,char** argv)
+{
     struct Arguments args;
    
-    struct ArgsThreadSProd argsthsprod[MAX_THREADS];
-    struct ArgsThreadSCon argsthscon;
+    struct ArgsThreadsProducer argsthsprod[MAX_THREADS];
+    struct ArgsThreadsConsumer argsthscon;
     struct Message request_message;
+
     ParseArguments(argc,argv,&args);
-   pthread_t tid[MAX_THREADS] = {0};
+
+    pthread_t tid[MAX_THREADS] = {0};
 
     //creates public fifo 
     mkfifo(args.public_fifo,0666);
     signal(SIGALRM,sigAlrmHandlerS);
+
     //opens public fifo for reading
-    int fd_publicfifo=open(args.public_fifo,O_NONBLOCK,O_RDONLY);
-    if(fd_publicfifo==-1){
-        perror("Erro na abertura do fifo ");
+    int fd_publicfifo = open(args.public_fifo,O_NONBLOCK,O_RDONLY);
+    if(fd_publicfifo == -1)
+    {
+        fprintf(stderr, "Error: %d\n", errno);
         return 0;
     }
 
-    //aloca espaço na heap  para armazem
-    struct Message *armazem=(struct Message*)malloc(sizeof(struct Message)*args.buffer_size);//paramentro de buff_size em nº
+    //allocates space in the heap for the cloud
+    struct Message *cloud = (struct Message*)malloc(sizeof(struct Message)*args.buffer_size);//paramentro de buff_size em nº
     
-    //inicialiiza cabeça da fila do armazem
-    initqueue(&queue);
+    initQueue(&queue);
     
-    //inicializa args para handler do thread consumidor
-    argsthscon.armazem=armazem;
+    //initializes args to use in handler of consumer thread
+    argsthscon.cloud = cloud;
     argsthscon.nmax=args.buffer_size;
 
-    //cria thread consumidor
+    //creates consumer thread
     pthread_create(&tid[0],NULL,&ThreadHandlerCons,&argsthscon); 
-    int th=1;//inicializa thread counter
+    int th=1;//thread counter
 
-    //inicia contagem de tempo para emissao sinal sigalrm
     alarm(args.nsecs);
     int j;
-    while(th<=10){
-        //ler os pedidos que chegam pelo fifopublico
-        if((j=read(fd_publicfifo, &request_message, sizeof(struct Message)))>0){
+    while(th <= 10)
+    {
+        //reads requests coming from the public fifo
+        if((j = read(fd_publicfifo, &request_message, sizeof(struct Message))) > 0)
+        {
             argsthsprod[th].rid=request_message.rid;
             argsthsprod[th].tid=request_message.tid;
             argsthsprod[th].pid =request_message.pid;
             argsthsprod[th].tskres=request_message.tskres;
             argsthsprod[th].tskload=request_message.tskload;
-            argsthsprod[th].armazem=armazem;
+            argsthsprod[th].cloud=cloud;
             argsthsprod[th].nmax=args.buffer_size;
             //printf("pid %d tid %ld tskload %d  th: %d\n",request_message.pid,request_message.tid,request_message.tskload,th);
             pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod[th]);
@@ -178,17 +190,15 @@ int main(int argc,char** argv){
         }     
     }
     printf("saiu \n");
-    //thread principal espera que threads produtores (k>=1) e consumidor (k=0) terminem
+    //main thread waits for the producer (k>=1) and consumer (k=0) threads to finish 
     for(int k = 0; k < th; k++)
     {
         pthread_join(tid[k], NULL);
     }
 
-    //fecha fifpublico depois de terminado o tempo de execuçao do servidor 
     close(fd_publicfifo);
     unlink(args.public_fifo);
-    //liberta espaço do buffer (armazem)
-    free(armazem);
+    free(cloud);
 
     return 0;
 

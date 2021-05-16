@@ -1,71 +1,74 @@
 #include "./includes/queue.h"
 
-
-
-void initqueue(struct Queue *q){
-    q->primeiro=-1;
-    q->ultimo=-1;
+void initQueue(struct Queue *q)
+{
+    q->first = -1;
+    q->last = -1;
 }
 
-
-bool queueIsEmpty(struct Queue *q){
-    if(q->primeiro==-1)
+bool queueIsEmpty(struct Queue *q)
+{
+    if(q->first == -1)
         return true;
     return false;
 }
 
-bool queueIsFull(struct Queue *q,int nmax){
-    if(q->ultimo==q->primeiro-1 || (q->primeiro==0 && q->ultimo==nmax-1)){
+bool queueIsFull(struct Queue *q,int nmax)
+{
+    if(q->last == q->first - 1 || (q->first == 0 && q->last == nmax-1))
+    {
         return true;
     }
     return false;
 }
 
-bool pushbackqueue(struct Queue *q,struct Message armazem[],struct Message new_message,int nmax){
-    
+bool pushBackQueue(struct Queue *q, struct Message cloud[], struct Message new_message, int nmax)
+{
     if(queueIsFull(q,nmax))
         return false;
 
-    if(queueIsEmpty(q)){
-        armazem[0]=new_message;
-        q->primeiro=0;
-        q->ultimo=0;
+    if(queueIsEmpty(q))
+    {
+        cloud[0] = new_message;
+        q->first = 0;
+        q->last = 0;
         return true;
     }
-    if(q->ultimo<nmax-1){
-        armazem[q->ultimo+1]=new_message;
-        q->ultimo+=1;
+    if(q->last < nmax-1)
+    {
+        cloud[q->last+1] = new_message;
+        q->last += 1;
     }
-    
-    else{
-         armazem[0]=new_message;
-         q->ultimo=0;
+    else
+    {
+        cloud[0]=new_message;
+        q->last = 0;
     }
-
     return true;
 }
 
-bool topQueue(struct Queue *q,struct Message armazem[],struct Message *top){
+bool topQueue(struct Queue *q,struct Message cloud[],struct Message *top){
     if(queueIsEmpty(q))
         return false ;
 
-    *top=armazem[q->primeiro];
+    *top=cloud[q->first];
     return true;
 }
 
-bool popQueue(struct Queue *q,struct Message armazem[],int nmax){
+bool popQueue(struct Queue *q,struct Message cloud[],int nmax){
      if(queueIsEmpty(q))
         return false ;
 
-    if(q->primeiro==q->ultimo){
-        q->primeiro=-1;
-        q->ultimo=-1;
+    if(q->first == q->last)
+    {
+        q->first = -1;
+        q->last = -1;
         return true;
     }
 
-    if(q->primeiro<nmax-1)
-        q->primeiro+=1;
+    if(q->first < nmax-1)
+        q->first += 1;
     
-    else{q->primeiro=0;}
+    else{q->first = 0;}
     return true;
 }

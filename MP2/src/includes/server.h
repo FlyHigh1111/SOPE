@@ -20,25 +20,25 @@ struct ArgsThread
 };
 
 
-struct ArgsThreadSProd
+struct ArgsThreadsProducer
 {   int rid; 		// request id
 	pid_t pid; 	    // process id
 	pthread_t tid;	// thread id
 	int tskload;    // task load
 	int tskres;		// task result
-    struct Message *armazem ; //armazem
-    int nmax;//numero max delementos armazem
+    struct Message *cloud ;
+    int nmax; //maximum number of elements in cloud
 
 };
 
-struct ArgsThreadSCon
+struct ArgsThreadsConsumer
 {  
-    struct Message *armazem; //armazem
+    struct Message *cloud;
     int nmax;
 };
 
 bool finish=false;
 
 bool isNumeric(char num[]);
-void sigAlrmHandlerS(int signum);
+void sigAlrmHandlers(int signum);
 void WriteLog(struct Log log);
