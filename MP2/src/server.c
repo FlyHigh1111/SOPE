@@ -75,7 +75,7 @@ void* ThreadHandlerCons(void *arguments)
             //writes response in the private fifo
             snprintf(private_fifo, BUFFER_SIZE, "/tmp/%d.%ld", response_message.pid, response_message.tid);
             int fd_private_fifo = open(private_fifo, O_RDONLY);
-            //write(fd_private_fifo, &response_message, sizeof(response_message));
+            write(fd_private_fifo, &response_message, sizeof(response_message));
 
             //constructs the message/log to print to stdout
             struct Log log;
@@ -170,11 +170,11 @@ int main(int argc,char** argv)
 
     alarm(args.nsecs);
     int j;
-    while(!finish)
+    while(th<=10)
     {
         //reads requests coming from the public fifo
         if((j = read(fd_publicfifo, &request_message, sizeof(struct Message))) > 0)
-        {
+        {   printf("th: %d",th);
             argsthsprod[th].rid=request_message.rid;
             argsthsprod[th].tid=request_message.tid;
             argsthsprod[th].pid =request_message.pid;
