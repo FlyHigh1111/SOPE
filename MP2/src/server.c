@@ -170,7 +170,7 @@ int main(int argc,char** argv)
 
     alarm(args.nsecs);
     int j;
-    while(th <= 10)
+    while(!finish)
     {
         //reads requests coming from the public fifo
         if((j = read(fd_publicfifo, &request_message, sizeof(struct Message))) > 0)
