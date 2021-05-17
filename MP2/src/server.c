@@ -61,20 +61,20 @@ void* ThreadHandlerCons(void *arguments)
     struct ArgsThreadsConsumer* args=(struct ArgsThreadsConsumer*)arguments;
     char private_fifo[BUFFER_SIZE];
 
-    while(1)
+    while(!finish || !queueIsEmpty(&queue))
     {
         //case if queue is not empty
-        printf("consumidor entrou no ciclo: %p %d %d \n",&queue,queue.first,queue.last);
+        //printf("consumidor entrou no ciclo: %p %d %d \n",&queue,queue.first,queue.last);
         if(!queueIsEmpty(&queue))
         {
-            printf("consumidor entrou na fila \n");
+            //printf("consumidor entrou na fila \n");
             //access the cloud for the next message and pops it 
             topQueue(&queue, args->cloud, &response_message);
             popQueue(&queue, args->cloud, args->nmax);
             
             //writes response in the private fifo
             snprintf(private_fifo, BUFFER_SIZE, "/tmp/%d.%ld", response_message.pid, response_message.tid);
-            int fd_private_fifo = open(private_fifo, O_RDONLY);
+            int fd_private_fifo = open(private_fifo, O_WRONLY);
             write(fd_private_fifo, &response_message, sizeof(response_message));
 
             //constructs the message/log to print to stdout
