@@ -64,7 +64,7 @@ void* ThreadHandlerCons(void *arguments)
     while(1)
     {
         //case if queue is not empty
-        printf("consumidor entrou no ciclo: %p %d \n",&queue,queue.first);
+        printf("consumidor entrou no ciclo: %p %d %d \n",&queue,queue.first,queue.last);
         if(!queueIsEmpty(&queue))
         {
             printf("consumidor entrou na fila \n");
