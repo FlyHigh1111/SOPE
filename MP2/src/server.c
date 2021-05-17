@@ -92,6 +92,7 @@ void* ThreadHandlerCons(void *arguments)
         //case if queue is empty
             
     }
+    pthread_exit(NULL);
 }
 void* ThreadHandlerProd(void *arguments)
 {
@@ -170,7 +171,7 @@ int main(int argc,char** argv)
 
     alarm(args.nsecs);
     int j;
-    while(th<=10)
+    while(!finish)
     {
         //reads requests coming from the public fifo
         if((j = read(fd_publicfifo, &request_message, sizeof(struct Message))) > 0)
@@ -189,7 +190,7 @@ int main(int argc,char** argv)
 
         }     
     }
-    printf("saiu \n");
+    //printf("saiu \n");
     //main thread waits for the producer (k>=1) and consumer (k=0) threads to finish 
     for(int k = 0; k < th; k++)
     {
