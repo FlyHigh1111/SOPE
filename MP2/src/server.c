@@ -64,7 +64,7 @@ void* ThreadHandlerCons(void *arguments)
     while(1)
     {
         //case if queue is not empty
-        printf("consumidor entrou no ciclo: %d \n",queue.first);
+        printf("consumidor entrou no ciclo: %p %d \n",queue,queue.first);
         if(!queueIsEmpty(&queue))
         {
             printf("consumidor entrou na fila \n");
@@ -107,7 +107,7 @@ void* ThreadHandlerProd(void *arguments)
     
     //calls function from library (lib) to obtain the task load of the request
     response_message.tskres=task(args->tskload);
-    printf("produto entrada ciclo: %d \n", queueIsFull(&queue,args->nmax));
+    //printf("produto entrada ciclo: %d \n", queueIsFull(&queue,args->nmax));
 
     //constructs the message/log to print to stdout
     struct Log log;
@@ -123,7 +123,7 @@ void* ThreadHandlerProd(void *arguments)
     while(queueIsFull(&queue,args->nmax));
     pthread_mutex_lock(&lock);
     pushBackQueue(&queue,args->cloud, response_message, args->nmax);
-        printf("produtor entrou queue %d %d %d \n",queue.first,args->cloud[queue.last].tskres,args->cloud[queue.last].rid); 
+        printf("produtor entrou queue: %p %d %d %d \n",queue,queue.first,args->cloud[queue.last].tskres,args->cloud[queue.last].rid); 
     
     pthread_mutex_unlock(&lock);
 
