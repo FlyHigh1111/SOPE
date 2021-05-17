@@ -13,7 +13,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <dirent.h>
-#include "common.h"
+#include "./includes/common.h"
 
 #define CONFORTSIZE	1024
 #define PERM 0666	// permissões de acesso ao FIFO
@@ -51,7 +51,7 @@ void* thread_client(void* arg) {
 	// generates a random task load
 	int t = (rand() % 9) + 1;
 
-	Message *request = malloc(sizeof(Message));
+	struct Message *request = malloc(sizeof(struct Message));
 	if (request == NULL) {
 		perror ("malloc(sizeof(Message)");
 		unlink(clientfifoname);
@@ -65,7 +65,7 @@ void* thread_client(void* arg) {
 	request->tskres = -1;
 
 	// serverfifo was opened in main() ; write() should not block...
-	if (write(serverfifo,request,sizeof(Message)) < 0) {
+	if (write(serverfifo,request,sizeof(struct Message)) < 0) {
 		perror("[client] write serverfifo");
 		free(request);
 		unlink(clientfifoname);
@@ -87,8 +87,8 @@ void* thread_client(void* arg) {
  	fprintf(stderr,"[client] opened client fifo %s\n", clientfifoname);
 
 		int nread;
-		Message answer;
-	if ((nread = read(clientfifo, (void *)&answer, sizeof(Message))) < 0) {	// read blocks; break it by cancelling the thread
+		struct Message answer;
+	if ((nread = read(clientfifo, (void *)&answer, sizeof(struct Message))) < 0) {	// read blocks; break it by cancelling the thread
 		perror("[client] read(clientfifo)");
 		printf("%ld ; %d ; %d ; %d ; %lu ; %d; GAVUP\n", time(NULL), request->rid, request->tskload, request->pid, (unsigned long) request->tid, request->tskres);
 		}
@@ -252,7 +252,7 @@ void terminate_blocked (pid_t pid) {
 } //terminate_blocked()
 
 void cleanup_handler(void *arg) {
-		Message *request = (Message *) arg;
+		struct Message *request = (struct Message *) arg;
 	fprintf(stderr, "[Client] Called clean-up handler\n");
 	printf("%ld ; %d ; %d ; %d ; %lu ; %d; GAVUP\n", time(NULL), request->rid, request->tskload, request->pid, (unsigned long) request->tid, request->tskres);
 } // cleanup_handler()
