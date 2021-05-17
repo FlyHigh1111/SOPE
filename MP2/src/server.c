@@ -75,7 +75,7 @@ void* ThreadHandlerCons(void *arguments)
             //writes response in the private fifo
             snprintf(private_fifo, BUFFER_SIZE, "/tmp/%d.%ld", response_message.pid, response_message.tid);
             int fd_private_fifo = open(private_fifo, O_RDONLY);
-            write(fd_private_fifo, &response_message, sizeof(response_message));
+            //write(fd_private_fifo, &response_message, sizeof(response_message));
 
             //constructs the message/log to print to stdout
             struct Log log;
