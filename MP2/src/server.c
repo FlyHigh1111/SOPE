@@ -82,7 +82,7 @@ void* ThreadHandlerCons(void *arguments)
           log.pid = response_message.pid;
           log.tid = response_message.tid;
           log.res = response_message.tskres;
-          log.oper = "TSKDN";
+          strcpy(log.oper,"TSKDN");
           WriteLog(log);
         }
         
@@ -116,7 +116,8 @@ void* ThreadHandlerProd(void *arguments)
     log.pid = response_message.pid;
     log.tid = response_message.tid;
     log.res = response_message.tskres;
-    log.oper = "TSKEX";
+    strcpy(log.oper,"TSKEX");
+    
     WriteLog(log);
 
     //puts the response in the cloud
@@ -175,11 +176,20 @@ int main(int argc,char** argv)
 
     alarm(args.nsecs);
     int j;
+    struct Log log;
     while(!finish)
     {
         //reads requests coming from the public fifo
         if((j = read(fd_publicfifo, &request_message, sizeof(struct Message))) > 0)
-        {   printf("th: %d",th);
+        {   
+        //constructs the message/log to print to stdout   
+            log.i = request_message.rid;
+            log.t = request_message.tskload;
+            log.pid = request_message.pid;
+            log.tid = request_message.tid;
+            log.res = request_message.tskres;
+            strcpy(log.oper,"RECVD");
+            WriteLog(log);
             argsthsprod[th].rid=request_message.rid;
             argsthsprod[th].tid=request_message.tid;
             argsthsprod[th].pid =request_message.pid;
@@ -191,8 +201,10 @@ int main(int argc,char** argv)
             th++;
        
 
-        }     
+        }  
+
     }
+    close(fd_publicfifo);
 
     //main thread waits for the producer (k>=1) and consumer (k=0) threads to finish 
     for(int k = th; k >= 0; k--)
@@ -200,7 +212,7 @@ int main(int argc,char** argv)
         pthread_join(tid[k], NULL);
     }
 
-    close(fd_publicfifo);
+    
     unlink(args.public_fifo);
     free(cloud);
 
