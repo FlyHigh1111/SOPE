@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./common.h"
+#include <semaphore.h>
 
 #define MAX_THREADS 10000
 #define SERVER -1
@@ -38,6 +39,11 @@ struct ArgsThreadsConsumer
 };
 
 bool finish=false;
+sem_t semEmpty;
+sem_t semFull;
+int count = 0;
+int buffsize = 0;
+struct Message **buffer;
 
 bool isNumeric(char num[]);
 void sigAlrmHandlers(int signum);

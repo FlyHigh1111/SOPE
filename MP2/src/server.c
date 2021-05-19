@@ -60,15 +60,21 @@ void* ThreadHandlerCons(void *arguments)
     struct Message response_message;
     struct ArgsThreadsConsumer* args=(struct ArgsThreadsConsumer*)arguments;
     char private_fifo[BUFFER_SIZE];
+    sem_wait(&semFull);
 
-    while(!finish || !queueIsEmpty(&queue))
+    while(1)
     {
       //case if queue is not empty
-      if(!queueIsEmpty(&queue))
-        {         
+      /*if(!queueIsEmpty(&queue))
+        {        
           //access the cloud for the next message and pops it 
           topQueue(&queue, args->cloud, &response_message);
-          popQueue(&queue, args->cloud, args->nmax);
+          popQueue(&queue, args->cloud, args->nmax);*/
+
+            pthread_mutex_lock(&lock);
+            count--;
+            response_message = args->cloud[count]; 
+            pthread_mutex_unlock(&lock);
         
           //writes response in the private fifo
           snprintf(private_fifo, BUFFER_SIZE, "/tmp/%d.%ld", response_message.pid, response_message.tid);
@@ -84,12 +90,12 @@ void* ThreadHandlerCons(void *arguments)
           log.res = response_message.tskres;
           log.oper = "TSKDN";
           WriteLog(log);
-        }
+        //}
         
         //case if queue is empty
-            
+        sem_post(&semEmpty);
+        pthread_exit(NULL);
     }
-    pthread_exit(NULL);
 }
 
 
@@ -119,14 +125,11 @@ void* ThreadHandlerProd(void *arguments)
     log.oper = "TSKEX";
     WriteLog(log);
 
-    //puts the response in the cloud
-    while(queueIsFull(&queue,args->nmax));
     pthread_mutex_lock(&lock);
-    pushBackQueue(&queue,args->cloud, response_message, args->nmax);
-        printf("produtor entrou queue: %p %d %d %d \n",&queue,queue.first,args->cloud[queue.last].tskres,args->cloud[queue.last].rid); 
-    
+    count++;
+    args->cloud[count] = response_message;
     pthread_mutex_unlock(&lock);
-
+    sem_post(&semFull);
 
     pthread_exit(NULL);
 }
@@ -147,6 +150,8 @@ int main(int argc,char** argv)
     ParseArguments(argc,argv,&args);
 
     pthread_t tid[MAX_THREADS] = {0};
+    sem_init(&semEmpty, 0, args.buffer_size);
+    sem_init(&semFull, 0, 0);
 
     //creates public fifo 
     mkfifo(args.public_fifo,0666);
@@ -163,7 +168,7 @@ int main(int argc,char** argv)
     //allocates space in the heap for the cloud
     struct Message *cloud = (struct Message*)malloc(sizeof(struct Message)*args.buffer_size);//paramentro de buff_size em nº
     
-    initQueue(&queue);
+    //initQueue(&queue);
     
     //initializes args to use in handler of consumer thread
     argsthscon.cloud = cloud;
@@ -174,7 +179,7 @@ int main(int argc,char** argv)
     int th=1;//thread counter
 
     alarm(args.nsecs);
-    int j;
+    int j=0;
     while(!finish)
     {
         //reads requests coming from the public fifo
@@ -203,6 +208,8 @@ int main(int argc,char** argv)
     close(fd_publicfifo);
     unlink(args.public_fifo);
     free(cloud);
+    sem_destroy(&semEmpty);
+    sem_destroy(&semFull);
 
     return 0;
 
