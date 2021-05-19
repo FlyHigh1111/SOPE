@@ -148,7 +148,7 @@ int main(int argc,char** argv)
     //creates public fifo 
     mkfifo(args.public_fifo,0666);
     signal(SIGALRM,sigAlrmHandlerS);
-
+    printf("P1");
     //opens public fifo for reading
     int fd_publicfifo = open(args.public_fifo,O_NONBLOCK,O_RDONLY);
     if(fd_publicfifo == -1)
