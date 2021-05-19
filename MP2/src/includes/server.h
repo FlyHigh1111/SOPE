@@ -47,4 +47,4 @@ struct Message **buffer;
 
 bool isNumeric(char num[]);
 void sigAlrmHandlers(int signum);
-void WriteLog(struct Log log);
+void WriteMsg(char *oper, struct Message msg);

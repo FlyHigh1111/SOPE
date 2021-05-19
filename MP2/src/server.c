@@ -49,6 +49,13 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
         strcpy(args->public_fifo,argv[3]);      
     }
 }
+
+void WriteMsg(char *oper, struct Message msg){
+    time_t inst = time(NULL);
+    // structure: inst ; i ; t ; pid ; tid ; res ; oper
+    fprintf(stdout, "%ld ; %d ; %d ; %d ; %ld ; %d ; %s\n", inst, msg.rid, msg.tskload, msg.pid, msg.tid, msg.tskres, oper);
+}
+
 void sigAlrmHandlerS(int signum)
 {
     finish = true;
@@ -79,17 +86,14 @@ void* ThreadHandlerCons(void *arguments)
           //writes response in the private fifo
           snprintf(private_fifo, BUFFER_SIZE, "/tmp/%d.%ld", response_message.pid, response_message.tid);
           int fd_private_fifo = open(private_fifo, O_WRONLY);
-          write(fd_private_fifo, &response_message, sizeof(response_message));
+          int num = write(fd_private_fifo, &response_message, sizeof(response_message));
 
-          //constructs the message/log to print to stdout
-          struct Log log;
-          log.i = response_message.rid;
-          log.t = response_message.tskload;
-          log.pid = response_message.pid;
-          log.tid = response_message.tid;
-          log.res = response_message.tskres;
-          log.oper = "TSKDN";
-          WriteLog(log);
+            if(num == -1){
+                WriteMsg("FAILD", response_message);
+            }
+            else{
+                WriteMsg("TSKDN", response_message);
+            }
         //}
         
         //case if queue is empty
@@ -115,16 +119,10 @@ void* ThreadHandlerProd(void *arguments)
     response_message.tskres=task(args->tskload);
     //printf("produto entrada ciclo: %d \n", queueIsFull(&queue,args->nmax));
 
-    //constructs the message/log to print to stdout
-    struct Log log;
-    log.i = response_message.rid;
-    log.t = response_message.tskload;
-    log.pid = response_message.pid;
-    log.tid = response_message.tid;
-    log.res = response_message.tskres;
-    log.oper = "TSKEX";
-    WriteLog(log);
-
+    if(response_message.tskres){
+        WriteMsg("TSKEX", response_message);
+    }
+    
     pthread_mutex_lock(&lock);
     count++;
     args->cloud[count] = response_message;
