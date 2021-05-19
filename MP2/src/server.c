@@ -71,13 +71,6 @@ void* ThreadHandlerCons(void *arguments)
 
     while(1)
     {
-      //case if queue is not empty
-      /*if(!queueIsEmpty(&queue))
-        {        
-          //access the cloud for the next message and pops it 
-          topQueue(&queue, args->cloud, &response_message);
-          popQueue(&queue, args->cloud, args->nmax);*/
-
             pthread_mutex_lock(&lock);
             count--;
             response_message = args->cloud[count]; 
@@ -94,9 +87,6 @@ void* ThreadHandlerCons(void *arguments)
             else{
                 WriteMsg("TSKDN", response_message);
             }
-        //}
-        
-        //case if queue is empty
         sem_post(&semEmpty);
         pthread_exit(NULL);
     }
@@ -108,6 +98,7 @@ void* ThreadHandlerProd(void *arguments)
     struct Message response_message;
     
     struct ArgsThreadsProducer* args = (struct ArgsThreadsProducer*)arguments;
+    sem_wait(&semEmpty);
 
     //builds response to put in the cloud
     response_message.rid=args->rid;
@@ -203,11 +194,11 @@ int main(int argc,char** argv)
         pthread_join(tid[k], NULL);
     }
 
+    sem_destroy(&semEmpty);
+    sem_destroy(&semFull);
     close(fd_publicfifo);
     unlink(args.public_fifo);
     free(cloud);
-    sem_destroy(&semEmpty);
-    sem_destroy(&semFull);
 
     return 0;
 
