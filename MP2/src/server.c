@@ -1,7 +1,6 @@
 #include "./includes/server.h"
 #include "./includes/common.h"
 #include "./includes/queue.h"
-
 bool isNumeric(char num[] )
 {
     for(int i = 0; i < strlen(num); i++)
@@ -82,7 +81,7 @@ void* ThreadHandlerCons(void *arguments)
           log.pid = response_message.pid;
           log.tid = response_message.tid;
           log.res = response_message.tskres;
-          strcpy(log.oper,"TSKDN");
+          log.oper = "TSKDN";
           WriteLog(log);
         }
         
@@ -116,16 +115,13 @@ void* ThreadHandlerProd(void *arguments)
     log.pid = response_message.pid;
     log.tid = response_message.tid;
     log.res = response_message.tskres;
-    strcpy(log.oper,"TSKEX");
-    
+    log.oper = "TSKEX";
     WriteLog(log);
 
     //puts the response in the cloud
     while(queueIsFull(&queue,args->nmax));
     pthread_mutex_lock(&lock);
-    pushBackQueue(&queue,args->cloud, response_message, args->nmax);
-        printf("produtor entrou queue: %p %d %d %d \n",&queue,queue.first,args->cloud[queue.last].tskres,args->cloud[queue.last].rid); 
-    
+    pushBackQueue(&queue,args->cloud, response_message, args->nmax);  
     pthread_mutex_unlock(&lock);
 
 
@@ -182,14 +178,15 @@ int main(int argc,char** argv)
         //reads requests coming from the public fifo
         if((j = read(fd_publicfifo, &request_message, sizeof(struct Message))) > 0)
         {   
-        //constructs the message/log to print to stdout   
+            //constructs the message/log to print to stdout   
             log.i = request_message.rid;
             log.t = request_message.tskload;
             log.pid = request_message.pid;
             log.tid = request_message.tid;
             log.res = request_message.tskres;
-            strcpy(log.oper,"RECVD");
+            log.oper = "RECVD";
             WriteLog(log);
+
             argsthsprod[th].rid=request_message.rid;
             argsthsprod[th].tid=request_message.tid;
             argsthsprod[th].pid =request_message.pid;
@@ -201,17 +198,15 @@ int main(int argc,char** argv)
             th++;
        
 
-        }  
-
+        }     
     }
     close(fd_publicfifo);
-
     //main thread waits for the producer (k>=1) and consumer (k=0) threads to finish 
     for(int k = th; k >= 0; k--)
     {
         pthread_join(tid[k], NULL);
     }
-
+    //close(fd_publicfifo);
     
     unlink(args.public_fifo);
     free(cloud);
