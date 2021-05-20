@@ -87,9 +87,9 @@ void* ThreadHandlerCons(void *arguments)
             
             
             if(write(fd_private_fifo, &response_message, sizeof(response_message))<0)
-                log.oper = "FAILD";
+                log.oper = "FAILD";//client gaveup and closed private fifo
             else
-                log.oper = "TSKDN";
+                log.oper = "TSKDN"; //message sent sucessfully 
             close(fd_private_fifo);
             
             WriteLog(log);
@@ -125,7 +125,7 @@ void* ThreadHandlerProd(void *arguments)
     log.pid = response_message.pid;
     log.tid = response_message.tid;
     log.res = response_message.tskres;
-    log.oper = "TSKEX";
+    log.oper = "TSKEX";//got result from library (task)
     WriteLog(log);
     
     //puts the response in the cloud
@@ -191,7 +191,7 @@ int main(int argc,char** argv)
             log.pid = request_message.pid;
             log.tid = request_message.tid;
             log.res = request_message.tskres;
-            log.oper = "RECVD";
+            log.oper = "RECVD";//request received from client
             WriteLog(log);
             
             argsthsprod[th].rid=request_message.rid;
@@ -210,7 +210,7 @@ int main(int argc,char** argv)
     
     close(fd_publicfifo);
     unlink(args.public_fifo);
-    sleep(2);
+   
     
     //main thread waits for the producer (k>=1) threads to finish
     for(int k = 1; k <= th; k++)
