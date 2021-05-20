@@ -38,14 +38,14 @@ void ParseArguments(int argc, char *argv[], struct Arguments *args)
             exit(1);
         }
         args->buffer_size=atoi(argv[4]);
-        strcpy(args->public_fifo,argv[5]);
+        snprintf(args->public_fifo, sizeof(args->public_fifo), "%s", argv[5]);
     }
     args->nsecs = atoi(argv[2]);
     
     if(argc==4)
     {
         args->buffer_size = BUFF_SIZE;
-        strcpy(args->public_fifo,argv[3]);
+        snprintf(args->public_fifo, sizeof(args->public_fifo), "%s", argv[3]);
     }
 }
 void sigAlrmHandlerS(int signum)
