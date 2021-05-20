@@ -12,19 +12,19 @@ main() {
 		clean) clean; exit;;
 		1) echo ":::: Test case $1 - Server outlives client" ;
 			clean;
-			run_server -t 20 -l 10 ./tmp/fifo_"${USER}";
+			run_server -t 20 -l 10 /tmp/fifo_"${USER}";
 			sleep 1 ;
-			run_client -t 10 ./tmp/fifo_"${USER}";;
+			run_client -t 10 /tmp/fifo_"${USER}";;
 		2) echo ":::: Test case $1 - Server dies first";
 			clean;
-			run_server -t 5 -l 10 ./tmp/fifo_"${USER}";
+			run_server -t 5 -l 10 /tmp/fifo_"${USER}";
 			sleep 1 ;
-			run_client -t 10 ./tmp/fifo_"${USER}";
+			run_client -t 10 /tmp/fifo_"${USER}";;
 		3) echo ":::: Test case $1 - Server starts late";
 			clean;
-			run_client -t 10 ./tmp/fifo_"${USER}";
+			run_client -t 10 /tmp/fifo_"${USER}";
 			sleep 1 ;
-			run_server -t 20 -l 10 ./tmp/fifo_"${USER}";
+			run_server -t 20 -l 10 /tmp/fifo_"${USER}";;
 		*)  echo "Usage: $0 <test_no> || $0 clean" ;
 			exit 1 ;;
 	esac
@@ -45,7 +45,7 @@ srv_args=""
 
 clean() {
   echo "Cleaning logs"
-  rm -rf ./tmp/fifo_"${USER}"
+  rm -rf /tmp/fifo_"${USER}"
   rm -f server_log.txt client_log.txt
   rm -f client_stderr.txt server_stderr.txt
 }
@@ -63,7 +63,7 @@ echo "Client PID: $cli_pid, exit status: $?, cmd: ${cli_args}"
 wait $srv_pid
 echo "Server PID: $srv_pid, exit status: $?, cmd: ${srv_args}"
 
-rm -rf ./tmp/fifo_"${USER}"
+rm -rf /tmp/fifo_"${USER}"
 
 echo "Assessing..."
 sleep 2
