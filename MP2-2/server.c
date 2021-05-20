@@ -174,7 +174,7 @@ int main(int argc,char** argv)
     
     finishCons=false;
     //creates consumer thread
-    pthread_create(&tid[0],NULL,&ThreadHandlerCons,&argsthscon);
+    pthread_create(&tid[0],NULL,ThreadHandlerCons,&argsthscon);
     int th=1;//thread counter
     
     alarm(args.nsecs);
@@ -201,7 +201,7 @@ int main(int argc,char** argv)
             argsthsprod[th].tskload=request_message.tskload;
             argsthsprod[th].cloud=cloud;
             argsthsprod[th].nmax=args.buffer_size;
-            pthread_create(&tid[th],NULL,&ThreadHandlerProd,&argsthsprod[th]);
+            pthread_create(&tid[th],NULL,ThreadHandlerProd,&argsthsprod[th]);
             th++;
             
             
