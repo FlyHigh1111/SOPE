@@ -84,7 +84,7 @@ void* ThreadHandlerCons(void *arguments)
             log.res = response_message.tskres;
             
             int fd_private_fifo = open(private_fifo, O_NONBLOCK|O_WRONLY);
-            if(write(fd_private_fifo, &response_message, sizeof(response_message))<0)
+            if(write(fd_private_fifo, &response_message, sizeof(response_message))<sizeof(response_message))
                 log.oper = "FAILD";
             else
                 log.oper = "TSKDN";
