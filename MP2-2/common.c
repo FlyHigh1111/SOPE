@@ -1,4 +1,4 @@
-#include "common.h"
+#include "./includes/common.h"
 
 void WriteLog(struct Log log)
 {

@@ -1,6 +1,6 @@
-#include "server.h"
-#include "common.h"
-#include "queue.h"
+#include "./includes/server.h"
+#include "./includes/common.h"
+#include "./includes/queue.h"
 bool isNumeric(char num[] )
 {
     for(int i = 0; i < strlen(num); i++)
