@@ -47,7 +47,8 @@ bool pushBackQueue(struct Queue *q, struct Message cloud[], struct Message new_m
     return true;
 }
 
-bool topQueue(struct Queue *q,struct Message cloud[],struct Message *top){
+bool topQueue(struct Queue *q,struct Message cloud[],struct Message *top)
+{
     if(queueIsEmpty(q))
         return false ;
 
@@ -55,7 +56,8 @@ bool topQueue(struct Queue *q,struct Message cloud[],struct Message *top){
     return true;
 }
 
-bool popQueue(struct Queue *q,struct Message cloud[],int nmax){
+bool popQueue(struct Queue *q,struct Message cloud[],int nmax)
+{
      if(queueIsEmpty(q))
         return false ;
 
@@ -69,6 +71,9 @@ bool popQueue(struct Queue *q,struct Message cloud[],int nmax){
     if(q->first < nmax-1)
         q->first += 1;
     
-    else{q->first = 0;}
+    else
+    {
+        q->first = 0;
+    }
     return true;
 }

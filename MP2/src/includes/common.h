@@ -38,8 +38,7 @@ struct Log
     pid_t pid;     //process ID
     pthread_t tid; //thread ID
     int res;       //task result
-    //char oper[6];    //operation made
-    char *oper;
+    char *oper;    //operation made
 };
 
 void WriteLog(struct Log log);

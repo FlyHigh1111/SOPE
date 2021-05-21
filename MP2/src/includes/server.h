@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./common.h"
+#include "common.h"
 
 #define MAX_THREADS 10000
 #define SERVER -1
@@ -11,8 +11,9 @@ struct Arguments
 {
     size_t nsecs;      //number of seconds
     int buffer_size;    //buffer size
-    char *public_fifo; //public FIFO
+    char public_fifo[100]; //public FIFO
 };
+
 struct ArgsThread
 {
     pid_t pid; //process id of the program
@@ -38,6 +39,7 @@ struct ArgsThreadsConsumer
 };
 
 bool finish=false;
+bool finishCons=false;
 
 bool isNumeric(char num[]);
 void sigAlrmHandlers(int signum);
