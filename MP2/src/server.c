@@ -1,7 +1,7 @@
 #include "./includes/server.h"
 #include "./includes/common.h"
 #include "./includes/queue.h"
-bool isNumeric(char num[] )
+bool isNumeric(char num[])
 {
     for(int i = 0; i < strlen(num); i++)
     {
@@ -164,7 +164,7 @@ int main(int argc,char** argv)
     }
     
     //allocates space in the heap for the cloud
-    struct Message *cloud = (struct Message*)malloc(sizeof(struct Message)*args.buffer_size);//paramentro de buff_size em nº
+    struct Message *cloud = (struct Message*)malloc(sizeof(struct Message)*args.buffer_size);
     
     initQueue(&queue);
     

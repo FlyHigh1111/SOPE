@@ -6,20 +6,16 @@
 #define SERVER -1
 
 pthread_mutex_t lock;
+bool finish=false;
+bool finishCons=false;
+int errno;
 
 struct Arguments
 {
-    size_t nsecs;      //number of seconds
-    int buffer_size;    //buffer size
+    size_t nsecs;          //number of seconds
+    int buffer_size;       //buffer size
     char public_fifo[100]; //public FIFO
 };
-
-struct ArgsThread
-{
-    pid_t pid; //process id of the program
-    int fd_public_fifo; //file descriptor of the public FIFO
-};
-
 
 struct ArgsThreadsProducer
 {   int rid; 		// request id
@@ -38,9 +34,8 @@ struct ArgsThreadsConsumer
     int nmax;
 };
 
-bool finish=false;
-bool finishCons=false;
-
 bool isNumeric(char num[]);
-void sigAlrmHandlers(int signum);
-void WriteLog(struct Log log);
+void ParseArguments(int argc, char *argv[], struct Arguments *args);
+void sigAlrmHandlerS(int signum);
+void* ThreadHandlerCons(void *arguments);
+void* ThreadHandlerProd(void *arguments);
